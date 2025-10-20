@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
 
+
+
 class WorkspaceCreate(BaseModel):
     name: str
 
@@ -17,6 +19,11 @@ class Employee(BaseModel):
     overwork_time: int
     sick_days: int
 
+
+class Log(BaseModel):
+    type: str
+    created_at: str
+    employees: list[Employee]
 
 class WorkspaceResponse(WorkspaceCreate):
     employees: list[Employee]

@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from fastapi.params import Depends
+from fastapi import Depends
+from sqlalchemy import select
 
 from .schemas import WorkspaceCreate
 from app.db.db import session_provider
@@ -15,10 +16,8 @@ router = APIRouter(
 async def get_my_workspaces(
         session: Depends(session_provider)
 ):
-
-    return {
-        "message": "All your workspaces here"
-    }
+    workspaces = session.execute(select(Workspace)).scalars().all()
+    return workspaces
 
 
 @router.get("/{workspace_name}")

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-from sqlalchemy import String, ForeignKey, Enum, DateTime
+from sqlalchemy import String, ForeignKey, Enum, DateTime, Table, Column
 
 from ._base import Base
 from app.core.enum import LogType
@@ -11,7 +11,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True)
+    email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str] = mapped_column(String())
 
     workspaces: Mapped[list["Workspace"]] = relationship(back_populates="user")
@@ -25,11 +25,19 @@ class Workspace(Base):
     name: Mapped[str] = mapped_column(String(), nullable=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship(back_populates="workspace")
+    user: Mapped["User"] = relationship(back_populates="workspaces")
 
     logs: Mapped[list["Log"]] = relationship(back_populates="workspace")
     employees: Mapped[list["Employee"]] = relationship(back_populates="workspace")
 
+
+
+employees_logs_table = Table(
+    "employees_logs",
+    Base.metadata,
+    Column("employee_id", ForeignKey("employees.id"), primary_key=True),
+    Column("log_id", ForeignKey("logs.id"), primary_key=True),
+)
 
 class Employee(Base):
 
@@ -49,7 +57,12 @@ class Employee(Base):
     days_off: Mapped[int] = mapped_column()
 
     workspace: Mapped["Workspace"] = relationship(back_populates="employees")
-    logs: Mapped[list["Log"]] = relationship(back_populates="employees")
+    workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
+
+    logs: Mapped[list["Log"]] = relationship(
+        secondary=employees_logs_table,
+        back_populates="employees"
+    )
 
 
 class Log(Base):
@@ -64,6 +77,11 @@ class Log(Base):
         default=datetime.now(timezone.utc)
     )
 
-    employees: Mapped[list["Employee"]] = relationship(back_populates="logs")
+    workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
     workspace: Mapped["Workspace"] = relationship(back_populates="logs")
+
+    employees: Mapped[list["Employee"]] = relationship(
+        secondary=employees_logs_table,
+        back_populates="logs"
+    )
 
