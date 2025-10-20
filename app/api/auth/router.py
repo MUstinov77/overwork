@@ -20,7 +20,6 @@ router = APIRouter(
 
 @router.post(
     "/signup",
-    response_model=None
 )
 async def signup(
         user_data: UserSignupLoginSchema,
@@ -32,6 +31,7 @@ async def signup(
     user.password = hashed_password
     session.add(user)
     return {"message": "User created"}
+
 
 @router.post("/login")
 async def login(
