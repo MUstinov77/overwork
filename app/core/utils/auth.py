@@ -11,7 +11,7 @@ import jwt
 
 from app.db.db import session_provider
 from app.api.auth.schemas import TokenData
-from app.db.models import User
+from app.db.models import User, Workspace
 from .encrypt import verify_password
 
 
@@ -76,5 +76,3 @@ async def get_current_user(
     if not user:
         raise credentials_exception
     return user
-
-

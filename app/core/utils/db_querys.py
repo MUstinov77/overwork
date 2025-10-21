@@ -1,0 +1,18 @@
+from typing import Annotated
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from fastapi import Depends
+
+from app.db.db import session_provider
+from app.core.utils.auth import get_current_user
+from app.db.models import Workspace, User, Log
+
+
+
+def get_workspace(
+    workspace_name: str,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(session_provider)
+):
+    return session.execute(select(Workspace).where(Workspace.name == workspace_name).where(Workspace.user == user)).scalar_one_or_none()
