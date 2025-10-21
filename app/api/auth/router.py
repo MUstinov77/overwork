@@ -11,6 +11,7 @@ from app.core.utils.encrypt import get_hashed_password
 from app.db.models import User
 from app.core.utils.auth import create_access_token,authenticate_user, ACCESS_TOKEN_EXPIRES_DAYS
 
+
 BASE_PREFIX = "/auth"
 
 router = APIRouter(
