@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class UserSignupLoginSchema(BaseModel):
 
-    email: str
+    username: str
     password: str
 
 class Token(BaseModel):
@@ -11,4 +11,4 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    email: str | None = None
+    username: str | None = None

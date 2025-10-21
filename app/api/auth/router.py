@@ -43,6 +43,6 @@ async def login(
         return {"message": "Incorrect username or password"}
     token_timedelta = timedelta(days=ACCESS_TOKEN_EXPIRES_DAYS)
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=token_timedelta
+        data={"sub": user.username}, expires_delta=token_timedelta
     )
     return Token(access_token=access_token, token_type="bearer")
