@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -10,20 +11,21 @@ class WorkspaceCreate(BaseModel):
 class Employee(BaseModel):
     name: str
     surname: str
-    father_name: str | None = None
+    fathers_name: str | None = None
 
-    position: str
-    vacation_full: int
-    vacation_surplus: int
-    days_off: int
-    overwork_time: int
-    sick_days: int
+    position: str | None = None
+    vacation_time: int | None = None
+    vacation_surplus: int | None = None
+    days_off: int | None = None
+    overwork_time: int | None = None
+    sick_days: int | None = None
 
 
 class Log(BaseModel):
     type: str
-    created_at: str
+    created_at: datetime
     employees: list[Employee]
+
 
 class WorkspaceResponse(WorkspaceCreate):
     employees: list[Employee]

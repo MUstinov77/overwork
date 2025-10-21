@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.api.employees.router import router as employees_router
 from app.api.schemas import WorkspaceCreate
 from app.db.db import session_provider
 from app.db.models import Workspace, User
@@ -14,6 +15,8 @@ from app.core.utils.auth import get_current_user
 router = APIRouter(
     prefix="/workspaces"
 )
+
+router.include_router(employees_router)
 
 
 @router.get(

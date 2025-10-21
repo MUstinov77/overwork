@@ -46,15 +46,15 @@ class Employee(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     name: Mapped[str] = mapped_column(String())
-    surname: Mapped[str] = mapped_column(String())
-    fathers_name: Mapped[str] = mapped_column(String())
+    surname: Mapped[str] = mapped_column(String(), nullable=True)
+    fathers_name: Mapped[str] = mapped_column(String(), nullable=True)
 
-    position: Mapped[str] = mapped_column(String())
-    overwork_time: Mapped[int] = mapped_column()
-    sick_days: Mapped[int] = mapped_column()
-    vacation_time: Mapped[int] = mapped_column()
-    vacation_surplus: Mapped[int] = mapped_column()
-    days_off: Mapped[int] = mapped_column()
+    position: Mapped[str] = mapped_column(String(), nullable=True)
+    overwork_time: Mapped[int] = mapped_column(nullable=True)
+    sick_days: Mapped[int] = mapped_column(nullable=True)
+    vacation_time: Mapped[int] = mapped_column(nullable=True)
+    vacation_surplus: Mapped[int] = mapped_column(nullable=True)
+    days_off: Mapped[int] = mapped_column(nullable=True)
 
     workspace: Mapped["Workspace"] = relationship(back_populates="employees")
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
