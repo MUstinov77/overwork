@@ -1,5 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel
+
+from app.core.enum import LogType
 
 
 
@@ -22,9 +24,9 @@ class Employee(BaseModel):
 
 
 class Log(BaseModel):
-    type: str
-    created_at: datetime
-    employees: list[Employee]
+    type: LogType
+    created_at: datetime = datetime.now(timezone.utc)
+    employees: list[Employee] = []
 
 
 class WorkspaceResponse(WorkspaceCreate):

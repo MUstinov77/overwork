@@ -25,7 +25,7 @@ class Workspace(Base):
     name: Mapped[str] = mapped_column(String(), nullable=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user: Mapped["User"] = relationship(back_populates="workspaces")
+    user: Mapped[User] = relationship(back_populates="workspaces")
 
     logs: Mapped[list["Log"]] = relationship(back_populates="workspace")
     employees: Mapped[list["Employee"]] = relationship(back_populates="workspace")
@@ -56,7 +56,7 @@ class Employee(Base):
     vacation_surplus: Mapped[int] = mapped_column(nullable=True)
     days_off: Mapped[int] = mapped_column(nullable=True)
 
-    workspace: Mapped["Workspace"] = relationship(back_populates="employees")
+    workspace: Mapped[Workspace] = relationship(back_populates="employees")
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
 
     logs: Mapped[list["Log"]] = relationship(

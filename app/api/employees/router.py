@@ -4,16 +4,18 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 
+from app.core.utils.router_factory import get_logs_router
 from app.db.db import session_provider
 from app.core.utils.db_querys import get_workspace, get_employee_by_id
 from app.db.models import Workspace, Employee
 from ..schemas import Employee as EmployeeSchema
+from ...core.enum import RouterType
 
 router = APIRouter(
     prefix="/{workspace_name}/employees"
 )
 
-# router.include_router() include log router here
+router.include_router(get_logs_router(RouterType.employees))
 
 @router.get(
     "/",
