@@ -10,7 +10,7 @@ class WorkspaceCreate(BaseModel):
 
 class Employee(BaseModel):
     name: str
-    surname: str
+    surname: str | None = None
     fathers_name: str | None = None
 
     position: str | None = None

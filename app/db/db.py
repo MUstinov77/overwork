@@ -37,5 +37,5 @@ async def lifespan(app: FastAPI):
 
     init_db()
     yield
-    destroy_db()
+    #destroy_db()
     return
