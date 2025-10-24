@@ -23,12 +23,11 @@ class Employee(BaseModel):
     sick_days: int | None = None
 
 
-class Log(BaseModel):
+class LogCreate(BaseModel):
     type: LogType
     created_at: datetime = datetime.now(timezone.utc)
-    employees: list[Employee] = []
 
 
 class WorkspaceResponse(WorkspaceCreate):
     employees: list[Employee]
-    logs: list[Log]
+    logs: list[LogCreate]

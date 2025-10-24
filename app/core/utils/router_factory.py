@@ -7,10 +7,10 @@ from app.db.db import session_provider
 from app.core.utils.db_querys import get_workspace, get_employee_by_id, get_current_user
 from ..enum import RouterType
 from app.db.models import Workspace, Employee, User, Log
-from app.api.schemas import Log
+from app.api.schemas import LogCreate
 
 
-def get_logs_router(router_type: RouterType):
+def get_logs_router(router_type: RouterType) -> APIRouter:
     router = APIRouter(
         dependencies=(
             Depends(get_workspace),
@@ -22,7 +22,10 @@ def get_logs_router(router_type: RouterType):
 
     if router_type == RouterType.workspaces:
 
-        @router.get("/")
+        @router.get(
+            "/",
+            response_model=list[LogCreate]
+        )
         async def get_logs(
                 workspace: Annotated[Workspace, Depends(get_workspace)],
                 user: Annotated[User, Depends(get_current_user)],
@@ -31,10 +34,10 @@ def get_logs_router(router_type: RouterType):
 
         @router.post(
             "/",
-            response_model=Log
+            response_model=LogCreate
         )
         async def create_log(
-                data: Log,
+                data: LogCreate,
                 workspace: Annotated[Workspace, Depends(get_workspace)],
                 user: Annotated[User, Depends(get_current_user)],
                 employees_ids: Annotated[list[int], Query()],
@@ -42,12 +45,12 @@ def get_logs_router(router_type: RouterType):
         ):
             log = Log(**data.model_dump())
 
-            # for employee_id in employees_ids:
-                # employee = get_employee_by_id(employee_id, user, workspace, session)
-                # employee.logs.append(log
-            # )
-            # add append via association_table(Logs, employees)
             workspace.logs.append(log)
+            for employee_id in employees_ids:
+                employee = get_employee_by_id(employee_id, user, workspace, session)
+                employee.logs.append(log)
+                log.employees.append(employee)
+
             return log
 
 
@@ -55,7 +58,7 @@ def get_logs_router(router_type: RouterType):
 
         @router.get(
             "/",
-            response_model=list[Log])
+            response_model=list[LogCreate])
         async def get_logs(
                 workspace: Annotated[Workspace, Depends(get_workspace)],
                 user: Annotated[User, Depends(get_current_user)],
@@ -66,9 +69,9 @@ def get_logs_router(router_type: RouterType):
 
         @router.get(
             "/{log_id}",
-            response_model=Log
+            response_model=LogCreate
         )
-        async def get_log_id(
+        async def get_log_by_id(
                 log_id: int,
                 user: Annotated[User, Depends(get_current_user)],
                 employee: Annotated[Employee, Depends(get_employee_by_id)],

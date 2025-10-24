@@ -31,13 +31,13 @@ class Workspace(Base):
     employees: Mapped[list["Employee"]] = relationship(back_populates="workspace")
 
 
-
 employees_logs_table = Table(
     "employees_logs",
     Base.metadata,
     Column("employee_id", ForeignKey("employees.id"), primary_key=True),
     Column("log_id", ForeignKey("logs.id"), primary_key=True),
 )
+
 
 class Employee(Base):
 
@@ -84,4 +84,3 @@ class Log(Base):
         secondary=employees_logs_table,
         back_populates="logs"
     )
-
