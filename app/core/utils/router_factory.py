@@ -25,7 +25,8 @@ def get_logs_router(router_type: RouterType) -> APIRouter:
 
         @router.get(
             "/",
-            response_model=list[LogCreate]
+            response_model=list[LogCreate],
+            tags=["workspaces_logs"]
         )
         async def get_logs(
                 workspace: Annotated[Workspace, Depends(get_workspace)],
@@ -35,7 +36,8 @@ def get_logs_router(router_type: RouterType) -> APIRouter:
 
         @router.post(
             "/",
-            response_model=LogCreate
+            response_model=LogCreate,
+            tags=["workspaces_logs"]
         )
         async def create_log(
                 data: LogCreate,
@@ -54,12 +56,13 @@ def get_logs_router(router_type: RouterType) -> APIRouter:
 
             return log
 
-
     elif router_type.employees:
 
         @router.get(
             "/",
-            response_model=list[LogCreate])
+            response_model=list[LogCreate],
+            tags=["employees_logs"]
+        )
         async def get_logs(
                 workspace: Annotated[Workspace, Depends(get_workspace)],
                 user: Annotated[User, Depends(get_current_user)],
@@ -67,10 +70,10 @@ def get_logs_router(router_type: RouterType) -> APIRouter:
         ):
             return employee.logs
 
-
         @router.get(
             "/{log_id}",
-            response_model=LogCreate
+            response_model=LogCreate,
+            tags=["employees_logs"]
         )
         async def get_log_by_id(
                 log_id: int,
