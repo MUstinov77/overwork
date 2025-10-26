@@ -15,7 +15,8 @@ from app.core.utils.auth import create_access_token,authenticate_user, ACCESS_TO
 BASE_PREFIX = "/auth"
 
 router = APIRouter(
-    prefix=BASE_PREFIX
+    prefix=BASE_PREFIX,
+    tags=["auth"],
 )
 
 

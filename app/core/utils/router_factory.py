@@ -17,6 +17,7 @@ def get_logs_router(router_type: RouterType) -> APIRouter:
             # Depends(get_employee_by_id),
             Depends(get_current_user),
         ),
+        tags=["logs"],
         prefix="/{workspace_name}/logs" if router_type == RouterType.workspaces else "/{employee_id}/logs",
     )
 

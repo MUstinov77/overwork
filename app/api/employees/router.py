@@ -12,10 +12,12 @@ from ..schemas import Employee as EmployeeSchema
 from ...core.enum import RouterType
 
 router = APIRouter(
-    prefix="/{workspace_name}/employees"
+    prefix="/{workspace_name}/employees",
+    tags=["employees"],
 )
 
 router.include_router(get_logs_router(RouterType.employees))
+
 
 @router.get(
     "/",

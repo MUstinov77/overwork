@@ -4,7 +4,6 @@ from fastapi import APIRouter
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.api.logs.router import router as logs_router
 from app.api.employees.router import router as employees_router
 from app.api.schemas import WorkspaceCreate
 from app.core.enum import RouterType
@@ -16,7 +15,8 @@ from app.core.utils.auth import get_current_user
 
 
 router = APIRouter(
-    prefix="/workspaces"
+    prefix="/workspaces",
+    tags=["workspaces"],
 )
 
 router.include_router(employees_router)
@@ -25,7 +25,8 @@ router.include_router(get_logs_router(RouterType.workspaces))
 
 @router.get(
     "/",
-    response_model=list[WorkspaceCreate])
+    response_model=list[WorkspaceCreate]
+)
 async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
 ):
