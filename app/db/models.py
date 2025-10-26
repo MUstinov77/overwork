@@ -14,7 +14,10 @@ class User(Base):
     username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str] = mapped_column(String())
 
-    workspaces: Mapped[list["Workspace"]] = relationship(back_populates="user")
+    workspaces: Mapped[list["Workspace"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class Workspace(Base):
@@ -27,16 +30,36 @@ class Workspace(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped[User] = relationship(back_populates="workspaces")
 
-    logs: Mapped[list["Log"]] = relationship(back_populates="workspace")
-    employees: Mapped[list["Employee"]] = relationship(back_populates="workspace")
-
+    logs: Mapped[list["Log"]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
+    employees: Mapped[list["Employee"]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+    )
 
 employees_logs_table = Table(
     "employees_logs",
     Base.metadata,
-    Column("employee_id", ForeignKey("employees.id"), primary_key=True),
-    Column("log_id", ForeignKey("logs.id"), primary_key=True),
+    Column(
+        "employee_id",
+        ForeignKey(
+            "employees.id",
+            ondelete="CASCADE",
+        ),
+        primary_key=True,
+    ),
+    Column(
+        "log_id",
+        ForeignKey(
+            "logs.id",
+            ondelete="CASCADE",
+        ),
+        primary_key=True,
+    ),
 )
+
 
 
 class Employee(Base):
@@ -61,7 +84,8 @@ class Employee(Base):
 
     logs: Mapped[list["Log"]] = relationship(
         secondary=employees_logs_table,
-        back_populates="employees"
+        back_populates="employees",
+        cascade="all, delete",
     )
 
 
@@ -82,5 +106,6 @@ class Log(Base):
 
     employees: Mapped[list["Employee"]] = relationship(
         secondary=employees_logs_table,
-        back_populates="logs"
+        back_populates="logs",
+        passive_deletes=True,
     )

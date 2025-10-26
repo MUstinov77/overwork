@@ -56,6 +56,7 @@ def get_logs_router(router_type: RouterType) -> APIRouter:
 
             return log
 
+
     elif router_type.employees:
 
         @router.get(
