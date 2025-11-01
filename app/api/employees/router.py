@@ -16,7 +16,10 @@ router = APIRouter(
     tags=["employees"],
 )
 
-router.include_router(get_logs_router(RouterType.employees))
+router.include_router(
+    get_logs_router(RouterType.employees),
+    prefix="/{employee_id}/logs",
+)
 
 
 @router.get(

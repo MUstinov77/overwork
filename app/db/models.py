@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-from sqlalchemy import String, ForeignKey, Enum, DateTime, Table, Column
+from sqlalchemy import String, ForeignKey, Enum, DateTime, Table, Column, Date
 
 from ._base import Base
 from app.core.enum import LogType
@@ -73,7 +73,12 @@ class Employee(Base):
     fathers_name: Mapped[str] = mapped_column(String(), nullable=True)
 
     position: Mapped[str] = mapped_column(String(), nullable=True)
+
+    # base stats for work day
     overwork_time: Mapped[int] = mapped_column(nullable=True)
+    time_worked: Mapped[int] = mapped_column(nullable=True)
+
+    # periodic attrs
     sick_days: Mapped[int] = mapped_column(nullable=True)
     vacation_time: Mapped[int] = mapped_column(nullable=True)
     vacation_surplus: Mapped[int] = mapped_column(nullable=True)
@@ -100,6 +105,8 @@ class Log(Base):
         DateTime,
         default=datetime.now(timezone.utc)
     )
+
+    log_date: Mapped[date] = mapped_column(Date())
 
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
     workspace: Mapped["Workspace"] = relationship(back_populates="logs")

@@ -20,7 +20,10 @@ router = APIRouter(
 )
 
 router.include_router(employees_router)
-router.include_router(get_logs_router(RouterType.workspaces))
+router.include_router(
+    get_logs_router(RouterType.workspaces),
+    prefix="/{workspace_name}/logs",
+)
 
 
 @router.get(
