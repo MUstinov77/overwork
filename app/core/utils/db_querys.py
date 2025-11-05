@@ -32,3 +32,14 @@ def get_employee_by_id(
         where(Employee.id == employee_id).
         where(Employee.workspace == workspace)
     ).scalar_one_or_none()
+
+def get_log_by_id(
+        log_id: int,
+        workspace: Annotated[Workspace, Depends(get_workspace)],
+        session: Annotated[Session, Depends(session_provider)]
+):
+    return session.execute(
+        select(Log).
+        where(Log.id == log_id).
+        join(Workspace.logs)
+    ).scalar_one_or_none()

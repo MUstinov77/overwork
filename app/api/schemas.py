@@ -39,14 +39,6 @@ class LogCreate(BaseModel):
     employees_id: list[int] = []
 
 
-class LogResponse(BaseModel):
-    type: LogType
-    created_at: datetime
-    log_date: date
-
-    employees: list[Employee]
-
-
 class WorkspaceResponse(WorkspaceCreate):
     employees: list[Employee]
     logs: list[LogCreate]

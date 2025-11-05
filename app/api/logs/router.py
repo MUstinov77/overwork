@@ -1,21 +1,21 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select, delete
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
 from app.db.db import session_provider
 from app.core.utils.logs import change_employee_data_via_log
-from app.core.utils.db_querys import get_workspace, get_employee_by_id, get_current_user
+from app.core.utils.db_querys import get_workspace, get_employee_by_id, get_current_user, get_log_by_id
 
 from app.db.models import Workspace, Employee, User, Log
-from app.api.schemas import LogCreate, LogResponse
+from app.api.schemas import LogCreate
 
 
 
 router = APIRouter(
     dependencies=(
         Depends(get_workspace),
-        # Depends(get_employee_by_id),
         Depends(get_current_user),
     ),
     tags=["logs"],
@@ -24,25 +24,36 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[LogResponse],
-    tags=["workspaces_logs"]
+    response_model=list[LogCreate],
+
 )
-async def get_workspace_logs(
-    workspace: Annotated[Workspace, Depends(get_workspace)],
-    #user: Annotated[User, Depends(get_current_user)],
+async def get_logs(
+        workspace: Annotated[Workspace, Depends(get_workspace)]
 ):
+
     return workspace.logs
+
+
+@router.get(
+    "/{employee_id}",
+    response_model=list[LogCreate]
+)
+async def get_logs_by_employee(
+        employee: Annotated[Employee, Depends(get_employee_by_id)],
+):
+    return employee.logs
+
 
 @router.post(
     "/",
-    response_model=LogResponse,
+    response_model=LogCreate,
     tags=["workspaces_logs"]
 )
-async def create_log_by_workspace(
+async def create_log(
     data: LogCreate,
     workspace: Annotated[Workspace, Depends(get_workspace)],
     user: Annotated[User, Depends(get_current_user)],
-    session: Annotated[Session, Depends(session_provider)]
+    session: Annotated[Session, Depends(session_provider)],
 ):
     log_data = data.model_dump(
         exclude_none=True,
@@ -63,27 +74,16 @@ async def create_log_by_workspace(
     return log
 
 
-@router.get(
-    "/",
-    response_model=list[LogCreate],
-    tags=["employees_logs"]
+@router.delete(
+    "/{log_id}"
 )
-async def get_logs(
-    workspace: Annotated[Workspace, Depends(get_workspace)],
-    #user: Annotated[User, Depends(get_current_user)],
-    employee: Annotated[Employee, Depends(get_employee_by_id)]
+async def delete_log(
+        log: Annotated[Log, Depends(get_log_by_id)],
+        workspace: Annotated[Workspace, Depends(get_workspace)],
+        session: Annotated[Session, Depends(session_provider)],
+        change_data: bool = True
 ):
-    return employee.logs
+    if not change_data:
+        session.execute(delete(Log).where(Log.id == log.id))
+        return {"message": "log deleted"}
 
-@router.get(
-    "/{log_id}",
-    response_model=LogCreate,
-    tags=["employees_logs"]
-)
-async def get_log_by_id(
-    log_id: int,
-    #user: Annotated[User, Depends(get_current_user)],
-    employee: Annotated[Employee, Depends(get_employee_by_id)],
-    workspace: Annotated[Workspace, Depends(get_workspace)]
-):
-    return employee.logs.filter(Log.id == log_id).one_or_none()

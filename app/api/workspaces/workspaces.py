@@ -9,8 +9,8 @@ from app.api.schemas import WorkspaceCreate
 from app.core.enum import RouterType
 from app.db.db import session_provider
 from app.db.models import Workspace, User
-from app.core.utils.router_factory import get_logs_router
 from app.core.utils.db_querys import get_workspace
+from app.api.logs.router import router as logs_router
 from app.core.utils.auth import get_current_user
 
 
@@ -21,7 +21,7 @@ router = APIRouter(
 
 router.include_router(employees_router)
 router.include_router(
-    get_logs_router(RouterType.workspaces),
+    logs_router,
     prefix="/{workspace_name}/logs",
 )
 

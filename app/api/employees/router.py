@@ -4,21 +4,16 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 
-from app.core.utils.router_factory import get_logs_router
 from app.db.db import session_provider
 from app.core.utils.db_querys import get_workspace, get_employee_by_id
 from app.db.models import Workspace, Employee
+from app.api.logs.router import router as logs_router
 from ..schemas import Employee as EmployeeSchema
-from ...core.enum import RouterType
+
 
 router = APIRouter(
     prefix="/{workspace_name}/employees",
     tags=["employees"],
-)
-
-router.include_router(
-    get_logs_router(RouterType.employees),
-    prefix="/{employee_id}/logs",
 )
 
 
@@ -74,4 +69,14 @@ async def update_employee(
     session.execute(
         update(Employee).where(Employee.id == employee_id).values(**updated_data)
     )
+    return employee
+
+@router.get(
+    "/{employee_id}",
+    response_model=EmployeeSchema
+)
+async def get_employee_by_id(
+        employee_id: int,
+        employee: Annotated[Employee, Depends(get_employee_by_id)],
+):
     return employee
