@@ -1,5 +1,5 @@
-from datetime import datetime, timezone, timedelta, date
-from pydantic import BaseModel, computed_field
+from datetime import datetime, timezone, date
+from pydantic import BaseModel
 
 from app.core.enum import LogType
 
@@ -16,7 +16,7 @@ class Employee(BaseModel):
     fathers_name: str | None = None
 
     position: str | None = None
-    vacation_time: int | None = None
+    vacation: int | None = None
     vacation_surplus: int | None = None
     days_off: int | None = None
     overwork_time: int | None = None
@@ -24,7 +24,7 @@ class Employee(BaseModel):
 
 
 class LogCreate(BaseModel):
-    type: LogType = LogType.work_day
+    type: LogType = LogType.work_time
     created_at: datetime = datetime.now(timezone.utc)
     log_date: date = date.today()
 

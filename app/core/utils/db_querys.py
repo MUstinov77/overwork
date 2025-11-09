@@ -35,7 +35,6 @@ def get_employee_by_id(
 
 def get_log_by_id(
         log_id: int,
-        workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)]
 ):
     return session.execute(

@@ -75,15 +75,17 @@ async def create_log(
 
 
 @router.delete(
-    "/{log_id}"
+    "/{log_id}",
+    status_code=204
 )
 async def delete_log(
         log: Annotated[Log, Depends(get_log_by_id)],
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)],
-        change_data: bool = True
+        change_data: bool = True,
+        employees_ids: list[int] | None = None
 ):
-    if not change_data:
-        session.execute(delete(Log).where(Log.id == log.id))
-        return {"message": "log deleted"}
+    # workspace.logs.remove(log)
+    session.delete(log)
+    return {"message": "log deleted"}
 

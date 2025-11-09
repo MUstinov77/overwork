@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class LogType(Enum):
-    sick_day = "больничный"
+    sick_days = "больничный"
     vacation = "отпуск"
-    day_off = "отгул"
-    work_day = "работа"
+    days_off = "отгул"
+    work_time = "работа"
 
 
 class RouterType(Enum):
