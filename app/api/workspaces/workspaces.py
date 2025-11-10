@@ -1,12 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter
-from fastapi import Depends
+from fastapi import APIRouter, Depends, status, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
 from app.api.schemas import WorkspaceCreate
-from app.core.enum import RouterType
 from app.db.db import session_provider
 from app.db.models import Workspace, User
 from app.core.utils.db_querys import get_workspace
@@ -22,7 +21,7 @@ router = APIRouter(
 router.include_router(employees_router)
 router.include_router(
     logs_router,
-    prefix="/{workspace_name}/logs",
+    prefix="/{workspace_id}/logs",
 )
 
 
@@ -38,12 +37,15 @@ async def get_my_workspaces(
 
 
 @router.get(
-    "/{workspace_name}",
-    response_model=WorkspaceCreate
+    "/{workspace_id}",
+    response_model=WorkspaceCreate,
+    responses={404: {"description": "Workspace not found"}}
 )
 async def get_workspace_by_name(
-        workspace: Annotated[Workspace, Depends(get_workspace)]
+        workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
+    if not workspace:
+        return JSONResponse(status_code=404, content={"message": "Workspace not found"})
     return workspace
 
 

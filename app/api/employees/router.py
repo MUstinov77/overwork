@@ -12,7 +12,7 @@ from ..schemas import Employee as EmployeeSchema
 
 
 router = APIRouter(
-    prefix="/{workspace_name}/employees",
+    prefix="/{workspace_id}/employees",
     tags=["employees"],
 )
 
