@@ -4,8 +4,6 @@ from pydantic import BaseModel
 from app.core.enum import LogType
 
 
-
-
 class WorkspaceCreate(BaseModel):
     name: str
 

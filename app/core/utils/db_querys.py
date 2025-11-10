@@ -17,7 +17,7 @@ def get_workspace(
 ):
     workspace = session.execute(
         select(Workspace).
-        where(Workspace.name == workspace_id).
+        where(Workspace.id == workspace_id).
         where(Workspace.user == user)
     ).scalar_one_or_none()
 

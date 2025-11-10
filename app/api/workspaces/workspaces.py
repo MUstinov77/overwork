@@ -1,11 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
-from app.api.schemas import WorkspaceCreate
+from app.api.schemas import WorkspaceResponse, WorkspaceCreate
 from app.db.db import session_provider
 from app.db.models import Workspace, User
 from app.core.utils.db_querys import get_workspace
@@ -27,21 +28,20 @@ router.include_router(
 
 @router.get(
     "/",
-    response_model=list[WorkspaceCreate]
+    response_model=list[WorkspaceResponse]
 )
 async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
 ):
-
     return user.workspaces
 
 
 @router.get(
     "/{workspace_id}",
-    response_model=WorkspaceCreate,
+    response_model=WorkspaceResponse,
     responses={404: {"description": "Workspace not found"}}
 )
-async def get_workspace_by_name(
+async def get_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
     if not workspace:
@@ -65,10 +65,28 @@ async def create_workspace(
     return workspace
 
 
-@router.delete("/{workspace_name}")
-async def delete_workspace_by_name(
+@router.delete(
+    "/{workspace_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Session = Depends(session_provider)
 ):
     session.delete(workspace)
     return {"message": "Workspace deleted"}
+
+
+@router.patch(
+    "/{workspace_id}",
+    response_model=WorkspaceCreate
+)
+async def update_workspace(
+        data: WorkspaceCreate,
+        workspace: Annotated[Workspace, Depends(get_workspace)],
+        session: Annotated[Session, Depends(session_provider)]
+):
+    session.execute(
+        update(Workspace).where(Workspace.id == workspace.id).values(**data.model_dump())
+    )
+    return workspace
