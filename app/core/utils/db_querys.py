@@ -3,6 +3,7 @@ from typing import Annotated
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi import Depends, status
+from fastapi.responses import JSONResponse
 
 from app.db.db import session_provider
 from app.core.utils.auth import get_current_user
@@ -20,7 +21,8 @@ def get_workspace(
         where(Workspace.id == workspace_id).
         where(Workspace.user == user)
     ).scalar_one_or_none()
-
+    if not workspace:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Workspace not found"})
     return workspace
 
 def get_employee_by_id(

@@ -44,8 +44,6 @@ async def get_my_workspaces(
 async def get_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
-    if not workspace:
-        return JSONResponse(status_code=404, content={"message": "Workspace not found"})
     return workspace
 
 
@@ -67,15 +65,19 @@ async def create_workspace(
 
 @router.delete(
     "/{workspace_id}",
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Workspace not found"}}
 )
 async def delete_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Session = Depends(session_provider)
 ):
-    session.delete(workspace)
-    return {"message": "Workspace deleted"}
+    if type(workspace) == Workspace:
+        session.delete(workspace)
+        return {"message": "Workspace deleted"}
 
+    else:
+        return workspace
 
 @router.patch(
     "/{workspace_id}",
