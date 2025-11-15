@@ -16,7 +16,7 @@ class User(Base):
 
     workspaces: Mapped[list["Workspace"]] = relationship(
         back_populates="user",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
 
 
@@ -32,11 +32,11 @@ class Workspace(Base):
 
     logs: Mapped[list["Log"]] = relationship(
         back_populates="workspace",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
     employees: Mapped[list["Employee"]] = relationship(
         back_populates="workspace",
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
 
 employees_logs_table = Table(

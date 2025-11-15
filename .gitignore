@@ -136,6 +136,8 @@ dmypy.json
 # .idea
 .idea
 .vscode
+.DS_Store
+*.DS_Store
 
 static/
 media/

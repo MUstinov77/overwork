@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
@@ -28,12 +28,13 @@ router.include_router(
 
 @router.get(
     "/",
-    response_model=list[WorkspaceResponse]
+    response_model=list[WorkspaceResponse],
+    responses={404: {"description": "User not found"}}
 )
 async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
 ):
-    return user.workspaces
+    return user.workspaces if user else JSONResponse(status_code=404, content={"message": "User not found"})
 
 
 @router.get(
@@ -44,6 +45,8 @@ async def get_my_workspaces(
 async def get_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
+    if not workspace:
+        return JSONResponse(status_code=404, content={"message": "Workspace not found"})
     return workspace
 
 
@@ -72,12 +75,10 @@ async def delete_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Session = Depends(session_provider)
 ):
-    if type(workspace) == Workspace:
+    if workspace:
         session.delete(workspace)
-        return {"message": "Workspace deleted"}
-
-    else:
-        return workspace
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return JSONResponse(status_code=404, content={"message": "Workspace not found"})
 
 @router.patch(
     "/{workspace_id}",

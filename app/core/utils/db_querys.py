@@ -21,8 +21,6 @@ def get_workspace(
         where(Workspace.id == workspace_id).
         where(Workspace.user == user)
     ).scalar_one_or_none()
-    if not workspace:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Workspace not found"})
     return workspace
 
 def get_employee_by_id(
