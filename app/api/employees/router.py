@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, Response
 from app.db.db import session_provider
 from app.db.models import Workspace, Employee
 from app.core.utils.db_querys import get_workspace, get_employee_by_id
-from ..schemas import Employee as EmployeeSchema
+from ..schemas import EmployeeResponse
 
 
 router = APIRouter(
@@ -19,7 +19,7 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[EmployeeSchema],
+    response_model=list[EmployeeResponse],
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
     }
@@ -34,7 +34,7 @@ async def get_workspace_employees(
 
 @router.get(
     "/{employee_id}",
-    response_model=EmployeeSchema,
+    response_model=EmployeeResponse,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Employee not found"},
     }
@@ -49,7 +49,7 @@ async def get_employee_by_id(
 
 @router.post(
     "/",
-    response_model=EmployeeSchema,
+    response_model=EmployeeResponse,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
@@ -57,7 +57,7 @@ async def get_employee_by_id(
     },
 )
 async def create_employee(
-        data: EmployeeSchema,
+        data: EmployeeResponse,
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
     if not workspace:
@@ -87,13 +87,12 @@ async def delete_employee(
 
 @router.patch(
     "/{employee_id}",
-    response_model=EmployeeSchema
+    response_model=EmployeeResponse
 )
 async def update_employee(
-        employee_id: int,
-        data: EmployeeSchema,
+        data: EmployeeResponse,
         employee: Annotated[Employee, Depends(get_employee_by_id)],
-        session: Annotated[Session, Depends(session_provider)]
+        session: Annotated[Session, Depends(session_provider)],
 ):
     updated_data = data.model_dump(
         exclude_unset=True,
@@ -101,7 +100,7 @@ async def update_employee(
     )
 
     session.execute(
-        update(Employee).where(Employee.id == employee_id).values(**updated_data)
+        update(Employee).where(Employee.id == employee.id).values(**updated_data)
     )
     return employee
 
