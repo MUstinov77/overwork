@@ -1,13 +1,13 @@
 from typing import Annotated
 
-from sqlalchemy import update
+from sqlalchemy import update, select
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse, Response
 
 from app.db.db import session_provider
-from app.core.utils.db_querys import get_workspace, get_employee_by_id
 from app.db.models import Workspace, Employee
-from app.api.logs.router import router as logs_router
+from app.core.utils.db_querys import get_workspace, get_employee_by_id
 from ..schemas import Employee as EmployeeSchema
 
 
@@ -19,35 +19,70 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[EmployeeSchema]
+    response_model=list[EmployeeSchema],
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
+    }
 )
 async def get_workspace_employees(
         workspace: Annotated[Workspace, Depends(get_workspace)]
 ):
+    if not workspace:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Workspace not found"})
     return workspace.employees
+
+
+@router.get(
+    "/{employee_id}",
+    response_model=EmployeeSchema,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Employee not found"},
+    }
+)
+async def get_employee_by_id(
+        employee: Annotated[Employee, Depends(get_employee_by_id)],
+):
+    if not employee:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Employee not found"})
+    return employee
 
 
 @router.post(
     "/",
-    response_model=EmployeeSchema
+    response_model=EmployeeSchema,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
+        status.HTTP_409_CONFLICT: {"description": "Employee already exists"},
+    },
 )
 async def create_employee(
         data: EmployeeSchema,
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
+    if not workspace:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Workspace not found"})
     employee = Employee(**data.model_dump())
     employee.workspace_id = workspace.id
     workspace.employees.append(employee)
     return employee
 
 
-@router.delete("/{employee_id}")
+@router.delete(
+    "/{employee_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Employee not found"}
+    })
 async def delete_employee(
         employee: Annotated[Employee, Depends(get_employee_by_id)],
         workspace: Annotated[Workspace, Depends(get_workspace)],
+        session: Annotated[Session, Depends(session_provider)]
 ):
-    workspace.employees.remove(employee)
-    return {"message": "employee deleted"}
+    if not workspace or not employee:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Invalid employee or workspace"})
+    session.delete(employee)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.patch(
@@ -58,7 +93,6 @@ async def update_employee(
         employee_id: int,
         data: EmployeeSchema,
         employee: Annotated[Employee, Depends(get_employee_by_id)],
-        workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)]
 ):
     updated_data = data.model_dump(
@@ -71,12 +105,3 @@ async def update_employee(
     )
     return employee
 
-@router.get(
-    "/{employee_id}",
-    response_model=EmployeeSchema
-)
-async def get_employee_by_id(
-        employee_id: int,
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
-):
-    return employee

@@ -33,10 +33,12 @@ class Workspace(Base):
     logs: Mapped[list["Log"]] = relationship(
         back_populates="workspace",
         cascade="all, delete",
+        passive_deletes=True
     )
     employees: Mapped[list["Employee"]] = relationship(
         back_populates="workspace",
         cascade="all, delete",
+        passive_deletes=True
     )
 
 employees_logs_table = Table(
@@ -84,7 +86,12 @@ class Employee(Base):
     vacation: Mapped[int] = mapped_column(nullable=True)
     vacation_surplus: Mapped[int] = mapped_column(nullable=True)
     days_off: Mapped[int] = mapped_column(nullable=True)
-    workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id"))
+    workspace_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "workspaces.id",
+            ondelete="CASCADE"
+        )
+    )
 
 
     workspace: Mapped[Workspace] = relationship(back_populates="employees")
