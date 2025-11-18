@@ -1,13 +1,12 @@
-from datetime import datetime, timezone, date
-from typing import Annotated
-
-from pydantic import BaseModel
+from datetime import date, datetime, timezone
 
 from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
+
 from app.core.enum import LogType
-from app.db.models import Employee as EmployeeModel
 from app.core.utils.db_querys import get_employee_by_id
+from app.db.models import Employee as EmployeeModel
 
 
 class WorkspaceCreate(BaseModel):
@@ -36,22 +35,11 @@ class LogCreate(BaseModel):
     created_at: datetime = datetime.now(timezone.utc)
     log_date: date = date.today()
 
-    # fields for periodic params of Log
-    # day_start: date | None = None
-    # day_end: date | None = None
-
-
     time_worked: int | None = None
-
 
     employees_id: list[int] = []
 
 
 class WorkspaceResponse(WorkspaceCreate):
-    employees: list[Employee]
+    employees: list[EmployeeResponse]
     logs: list[LogCreate]
-
-
-def get_employee_data(employee: Annotated[EmployeeModel, Depends(get_employee_by_id)]):
-    data = Employee(**jsonable_encoder(employee))
-    return data

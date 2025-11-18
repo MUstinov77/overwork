@@ -1,19 +1,19 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
+import jwt
 from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-import jwt
 
-from app.db.db import session_provider
 from app.api.auth.schemas import TokenData
+from app.db.db import session_provider
 from app.db.models import User, Workspace
-from .encrypt import verify_password
 
+from .encrypt import verify_password
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

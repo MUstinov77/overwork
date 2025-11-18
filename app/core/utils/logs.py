@@ -1,12 +1,12 @@
-from typing import Annotated
 from datetime import timedelta
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import update
 from sqlalchemy.orm import Session
-from fastapi import Depends
 
-from app.core.enum import LogType
 from app.api.schemas import LogCreate
+from app.core.enum import LogType
 from app.db.db import session_provider
 from app.db.models import Employee
 

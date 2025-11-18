@@ -1,13 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.params import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from fastapi.params import Depends
-
 from app.db._base import Base
-
 
 engine = create_engine("sqlite:///overwork.db")
 

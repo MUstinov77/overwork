@@ -1,10 +1,20 @@
-from datetime import datetime, timezone, date
+from datetime import date, datetime, timezone
 
-from sqlalchemy.orm import mapped_column, Mapped, relationship
-from sqlalchemy import String, ForeignKey, Enum, DateTime, Table, Column, Date, Integer
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Table
+    )
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.core.enum import LogType
 
 from ._base import Base
-from app.core.enum import LogType
 
 
 class User(Base):

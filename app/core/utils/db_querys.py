@@ -1,14 +1,13 @@
 from typing import Annotated
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 from fastapi import Depends, status
 from fastapi.responses import JSONResponse
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from app.db.db import session_provider
 from app.core.utils.auth import get_current_user
-from app.db.models import Workspace, User, Log, Employee
-
+from app.db.db import session_provider
+from app.db.models import Employee, Log, User, Workspace
 
 
 def get_workspace(

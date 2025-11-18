@@ -1,16 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.db.db import session_provider
-from app.core.utils.logs import change_employee_data_via_log
-from app.core.utils.db_querys import get_workspace, get_employee_by_id, get_current_user, get_log_by_id
-
-from app.db.models import Workspace, Employee, User, Log
 from app.api.schemas import LogCreate
-
-
+from app.core.utils.db_querys import (
+    get_current_user,
+    get_employee_by_id,
+    get_log_by_id,
+    get_workspace
+    )
+from app.core.utils.logs import change_employee_data_via_log
+from app.db.db import session_provider
+from app.db.models import Log, User, Workspace
 
 router = APIRouter(
     dependencies=(
@@ -24,29 +27,46 @@ router = APIRouter(
 @router.get(
     "/",
     response_model=list[LogCreate],
-
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"}
+    }
 )
 async def get_logs(
         workspace: Annotated[Workspace, Depends(get_workspace)]
 ):
-
+    if not workspace:
+        return JSONResponse(
+            content={"message": "Workspace not found"},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
     return workspace.logs
 
 
 @router.get(
     "/{log_id}",
-    response_model=LogCreate
+    response_model=LogCreate,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Log not found"}
+    }
 )
 async def get_logs_by_id(
         log: Annotated[Log, Depends(get_log_by_id)]
 ):
+    if not log:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Log not found"}
+        )
     return log
 
 
 @router.post(
     "/",
     response_model=LogCreate,
-    tags=["workspaces_logs"]
+    tags=["workspaces_logs"],
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"message": "Log should get almost one employee id"}
+    }
 )
 async def create_log(
     data: LogCreate,
@@ -58,7 +78,12 @@ async def create_log(
         exclude_none=True,
         exclude_unset=True
     )
-    employees_ids = log_data.pop("employees_id")
+    employees_ids: list[int] | None = log_data.get("employees_id", None)
+    if not employees_ids:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": "Log should get almost one employee id"}
+        )
     log = Log(**log_data)
     workspace.logs.append(log)
     for employee_id in employees_ids:
@@ -75,7 +100,7 @@ async def create_log(
 
 @router.delete(
     "/{log_id}",
-    status_code=204
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_log(
         log: Annotated[Log, Depends(get_log_by_id)],
@@ -84,7 +109,6 @@ async def delete_log(
         change_data: bool = True,
         employees_ids: list[int] | None = None
 ):
-    # workspace.logs.remove(log)
     if not employees_ids:
         if change_data:
             for employee in workspace.employees:

@@ -6,13 +6,12 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
-from app.api.schemas import WorkspaceResponse, WorkspaceCreate
-from app.db.db import session_provider
-from app.db.models import Workspace, User
-from app.core.utils.db_querys import get_workspace
 from app.api.logs.router import router as logs_router
+from app.api.schemas import WorkspaceCreate, WorkspaceResponse
 from app.core.utils.auth import get_current_user
-
+from app.core.utils.db_querys import get_workspace
+from app.db.db import session_provider
+from app.db.models import User, Workspace
 
 router = APIRouter(
     prefix="/workspaces",

@@ -1,15 +1,15 @@
 from typing import Annotated
 
-from sqlalchemy import update, select
-from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse, Response
+from sqlalchemy import select, update
+from sqlalchemy.orm import Session
 
+from app.core.utils.db_querys import get_employee_by_id, get_workspace
 from app.db.db import session_provider
-from app.db.models import Workspace, Employee
-from app.core.utils.db_querys import get_workspace, get_employee_by_id
-from ..schemas import EmployeeResponse
+from app.db.models import Employee, Workspace
 
+from ..schemas import EmployeeResponse
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -46,6 +46,13 @@ async def get_employee_by_id(
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Employee not found"})
     return employee
 
+@router.get(
+    "/{employee_id}/logs",
+)
+async def get_employee_logs(
+        employee: Annotated[Employee, Depends(get_employee_by_id)],
+):
+    return employee.logs
 
 @router.post(
     "/",
