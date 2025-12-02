@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.api.schemas import LogCreate
+from app.api.schemas import LogCreate, LogResponse
 from app.core.utils.db_querys import (
     get_current_user,
     get_employee_by_id,
@@ -26,7 +26,8 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[LogCreate],
+    response_model=list[LogResponse],
+    response_model_exclude_none=True,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"}
     }
@@ -38,6 +39,11 @@ async def get_logs(
         return JSONResponse(
             content={"message": "Workspace not found"},
             status_code=status.HTTP_404_NOT_FOUND,
+        )
+    if not workspace.logs:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Empty logs"}
         )
     return workspace.logs
 
@@ -62,7 +68,8 @@ async def get_logs_by_id(
 
 @router.post(
     "/",
-    response_model=LogCreate,
+    response_model=LogResponse,
+    response_model_exclude_none=True,
     tags=["workspaces_logs"],
     responses={
         status.HTTP_400_BAD_REQUEST: {"message": "Log should get almost one employee id"}
@@ -78,7 +85,7 @@ async def create_log(
         exclude_none=True,
         exclude_unset=True
     )
-    employees_ids: list[int] | None = log_data.get("employees_id", None)
+    employees_ids = log_data.pop("employees_id") or None
     if not employees_ids:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -106,33 +113,24 @@ async def delete_log(
         log: Annotated[Log, Depends(get_log_by_id)],
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)],
-        change_data: bool = True,
         employees_ids: list[int] | None = None
 ):
-    if not employees_ids:
-        if change_data:
-            for employee in workspace.employees:
-                await change_employee_data_via_log(
-                    employee,
-                    log.type,
-                    session
-                )
+    for employee_id in employees_ids:
+        employee = get_employee_by_id(
+            employee_id,
+            workspace.user,
+            workspace,
+            session
+        )
+        await change_employee_data_via_log(
+            employee,
+            log.type.name,
+            session
+        )
+        #session.delete(log)
+        employee.logs.remove(log)
+    if not log.employees:
         session.delete(log)
-    else:
-        for employee_id in employees_ids:
-            employee = get_employee_by_id(
-                employee_id,
-                workspace.user,
-                workspace,
-                session
-            )
-            if change_data:
-                await change_employee_data_via_log(
-                    employee,
-                    log.type,
-                    session
-                )
-            employee.logs.remove(log)
     return {"message": "log deleted"}
 
 

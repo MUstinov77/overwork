@@ -6,8 +6,3 @@ class LogType(Enum):
     vacation = "отпуск"
     days_off = "отгул"
     work_time = "работа"
-
-
-class RouterType(Enum):
-    workspaces = "workspaces"
-    employees = "employees"

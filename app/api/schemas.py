@@ -5,8 +5,6 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
 from app.core.enum import LogType
-from app.core.utils.db_querys import get_employee_by_id
-from app.db.models import Employee as EmployeeModel
 
 
 class WorkspaceCreate(BaseModel):
@@ -26,13 +24,12 @@ class EmployeeRequest(BaseModel):
     sick_days: int | None = None
 
 
-class EmployeeResponse(BaseModel):
+class EmployeeResponse(EmployeeRequest):
     pass
 
 
 class LogCreate(BaseModel):
     type: LogType = LogType.work_time
-    created_at: datetime = datetime.now(timezone.utc)
     log_date: date = date.today()
 
     time_worked: int | None = None
@@ -43,3 +40,11 @@ class LogCreate(BaseModel):
 class WorkspaceResponse(WorkspaceCreate):
     employees: list[EmployeeResponse]
     logs: list[LogCreate]
+
+
+class LogResponse(BaseModel):
+    type: LogType
+    created_at: datetime
+    log_date: date
+    time_worked: int | None = None
+    employees: list[EmployeeResponse]

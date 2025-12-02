@@ -141,4 +141,5 @@ class Log(Base):
     employees: Mapped[list["Employee"]] = relationship(
         secondary=employees_logs_table,
         back_populates="logs",
+        passive_deletes=True,
     )
