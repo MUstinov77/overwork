@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class LogType(Enum):
-    sick_days = "больничный"
+    sick_day = "больничный"
     vacation = "отпуск"
-    days_off = "отгул"
-    work_time = "работа"
+    day_off = "отгул"
+    work_day = "работа"

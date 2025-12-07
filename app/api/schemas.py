@@ -2,7 +2,8 @@ from datetime import date, datetime, timezone
 
 from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
+from sqlalchemy import True_
 
 from app.core.enum import LogType
 
@@ -18,21 +19,36 @@ class EmployeeRequest(BaseModel):
 
     position: str | None = None
     vacation: int | None = None
-    vacation_surplus: int | None = None
+    vacation_surplus: int | None = 0
     days_off: int | None = None
+    work_time: int | None = None
     overwork_time: int | None = None
     sick_days: int | None = None
 
 
-class EmployeeResponse(EmployeeRequest):
-    pass
+
+
+
+class EmployeeResponse(BaseModel):
+    name: str | None = None
+    surname: str | None = None
+    fathers_name: str | None = None
+
+    position: str | None = None
+    vacation: int | None = None
+    vacation_surplus: int | None = None
+    days_off: int | None = None
+    work_time: int | None = None
+    overwork_time: int | None = None
+    sick_days: int | None = None
+
 
 
 class LogCreate(BaseModel):
-    type: LogType = LogType.work_time
+    type: LogType = LogType.work_day
     log_date: date = date.today()
 
-    time_worked: int | None = None
+    data: int | None = None
 
     employees_id: list[int] = []
 

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 
 from sqlalchemy import (
     Column,
@@ -126,6 +126,7 @@ class Log(Base):
     )
 
     log_date: Mapped[date] = mapped_column(Date())
+    data: Mapped[int] = mapped_column(nullable=True)
 
     workspace_id: Mapped[int] = mapped_column(
         ForeignKey(

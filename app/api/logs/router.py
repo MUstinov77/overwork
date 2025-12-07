@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.api.schemas import LogCreate, LogResponse
+from app.core.enum import LogType
 from app.core.utils.db_querys import (
     get_current_user,
     get_employee_by_id,
@@ -93,14 +94,20 @@ async def create_log(
         )
     log = Log(**log_data)
     workspace.logs.append(log)
+    attr_name, data = log.type.name, log.data
     for employee_id in employees_ids:
-        employee = get_employee_by_id(employee_id, user, workspace, session)
+        employee = get_employee_by_id(
+            employee_id,
+            user,
+            workspace,
+            session
+        )
         employee.logs.append(log)
-        attr_name = log.type.name
         await change_employee_data_via_log(
             employee,
             attr_name,
-            session
+            data,
+            "create",
         )
     return log
 
@@ -113,7 +120,7 @@ async def delete_log(
         log: Annotated[Log, Depends(get_log_by_id)],
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)],
-        employees_ids: list[int] | None = None
+        employees_ids: list[int]
 ):
     for employee_id in employees_ids:
         employee = get_employee_by_id(
@@ -125,9 +132,8 @@ async def delete_log(
         await change_employee_data_via_log(
             employee,
             log.type.name,
-            session
+            "delete"
         )
-        #session.delete(log)
         employee.logs.remove(log)
     if not log.employees:
         session.delete(log)

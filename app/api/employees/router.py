@@ -9,7 +9,7 @@ from app.core.utils.db_querys import get_employee_by_id, get_workspace, get_log_
 from app.db.db import session_provider
 from app.db.models import Employee, Workspace, Log
 
-from ..schemas import EmployeeResponse, LogCreate
+from ..schemas import EmployeeResponse, LogCreate, EmployeeRequest
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -84,13 +84,22 @@ async def get_log_by_employee_id(
     },
 )
 async def create_employee(
-        data: EmployeeResponse,
+        data: EmployeeRequest,
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
     if not workspace:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Workspace not found"})
-    employee = Employee(**data.model_dump())
-    employee.workspace_id = workspace.id
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Workspace not found"}
+        )
+    employee_data = data.model_dump(
+        exclude_none=True
+    )
+    vacation_surplus = employee_data.get("vacation_surplus", None)
+    if not vacation_surplus:
+        if employee_data.get("vacation", None):
+            employee_data["vacation_surplus"] = employee_data["vacation"]
+    employee = Employee(**employee_data)
     workspace.employees.append(employee)
     return employee
 
@@ -133,4 +142,3 @@ async def update_employee(
         update(Employee).where(Employee.id == employee.id).values(**updated_data)
     )
     return employee
-
