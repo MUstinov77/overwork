@@ -5,11 +5,15 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.core.utils.db_querys import get_employee_by_id, get_workspace, get_log_by_id
+from app.core.utils.db_querys import (
+    get_employee_by_id,
+    get_log_by_id,
+    get_workspace
+    )
 from app.db.db import session_provider
-from app.db.models import Employee, Workspace, Log
+from app.db.models import Employee, Log, Workspace
 
-from ..schemas import EmployeeResponse, LogCreate, EmployeeRequest
+from ..schemas import EmployeeRequest, EmployeeResponse, LogCreate
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",

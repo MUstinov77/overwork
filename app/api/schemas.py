@@ -62,5 +62,5 @@ class LogResponse(BaseModel):
     type: LogType
     created_at: datetime
     log_date: date
-    time_worked: int | None = None
+    data: int | None = None
     employees: list[EmployeeResponse]

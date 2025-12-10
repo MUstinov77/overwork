@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.api.schemas import LogCreate, LogResponse
@@ -132,6 +133,7 @@ async def delete_log(
         await change_employee_data_via_log(
             employee,
             log.type.name,
+            log.data,
             "delete"
         )
         employee.logs.remove(log)
@@ -141,9 +143,45 @@ async def delete_log(
 
 
 @router.patch(
-    "/{log_id}"
+    "/{log_id}",
+    response_model=LogResponse,
 )
 async def update_log_by_id(
+        updated_data: LogCreate,
         log: Annotated[Log, Depends(get_logs_by_id)],
+        session: Annotated[Session, Depends(session_provider)],
+        user: Annotated[User, Depends(get_current_user)],
 ):
-    pass
+    old_log_type, old_log_data = log.type.name, log.data
+    updated_data = updated_data.model_dump(exclude_none=True)
+    employees_ids = updated_data.pop("employees_id") or None
+    session.execute(update(Log).where(Log.id == log.id).values(**updated_data))
+    if employees_ids:
+        for employee_id in employees_ids:
+            employee = get_employee_by_id(
+                employee_id,
+                user,
+                log.workspace,
+                session
+            )
+            log.employees.append(employee)
+            await change_employee_data_via_log(
+                employee,
+                log.type.name,
+                log.data,
+                "create"
+            )
+    for employee in log.employees:
+        await change_employee_data_via_log(
+            employee,
+            old_log_type,
+            old_log_data,
+            "delete"
+        )
+        await change_employee_data_via_log(
+            employee,
+            log.type.name,
+            log.data,
+            "create"
+        )
+    return log
