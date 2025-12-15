@@ -4,11 +4,13 @@ from sqlalchemy import (
     Column,
     Date,
     DateTime,
+    event,
     Enum,
     ForeignKey,
     Integer,
     String,
-    Table
+    Table,
+    UniqueConstraint,
     )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -144,3 +146,21 @@ class Log(Base):
         back_populates="logs",
         passive_deletes=True,
     )
+    __table_args__ = (
+        UniqueConstraint("log_date", "workspace_id", name="unique_log"),
+    )
+
+@event.listens_for(Employee.logs, "append")
+def count_overwork(target, value, initiator):
+    match value.type:
+        case LogType.work_day:
+            time_worked = value.data
+            for log in target.logs[::-1]:
+                if log.type == LogType.work_day and log.log_date.month == value.log_date.month:
+                    time_worked += log.data
+                    if time_worked > 164:
+                        target.overwork_time = time_worked - 164
+                else:
+                    break
+        case _:
+            pass
