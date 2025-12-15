@@ -5,7 +5,7 @@ from fastapi.params import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.db._base import Base
+from app.models.base import Base
 
 engine = create_engine("sqlite:///overwork.db")
 

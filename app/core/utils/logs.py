@@ -1,4 +1,4 @@
-from app.db.models import Employee
+from app.models.employee import Employee
 
 
 async def change_employee_data_via_log(

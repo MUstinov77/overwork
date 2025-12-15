@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.api.auth.schemas import TokenData
 from app.db.db import session_provider
-from app.db.models import User, Workspace
+from app.models.user import User
 
 from .encrypt import verify_password
 

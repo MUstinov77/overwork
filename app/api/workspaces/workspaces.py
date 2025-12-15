@@ -11,7 +11,8 @@ from app.api.schemas import WorkspaceCreate, WorkspaceResponse
 from app.core.utils.auth import get_current_user
 from app.core.utils.db_querys import get_workspace
 from app.db.db import session_provider
-from app.db.models import User, Workspace
+from app.models.user import User
+from app.models.workspace import Workspace
 
 router = APIRouter(
     prefix="/workspaces",

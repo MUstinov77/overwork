@@ -6,7 +6,6 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.api.schemas import LogCreate, LogResponse
-from app.core.enum import LogType
 from app.core.utils.db_querys import (
     get_current_user,
     get_employee_by_id,
@@ -15,7 +14,9 @@ from app.core.utils.db_querys import (
     )
 from app.core.utils.logs import change_employee_data_via_log
 from app.db.db import session_provider
-from app.db.models import Log, User, Workspace
+from app.models.log import Log
+from app.models.workspace import Workspace
+from app.models.user import User
 
 router = APIRouter(
     dependencies=(

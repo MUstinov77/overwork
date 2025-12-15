@@ -12,7 +12,7 @@ from app.core.utils.auth import (
     )
 from app.core.utils.encrypt import get_hashed_password
 from app.db.db import session_provider
-from app.db.models import User
+from app.models.user import User
 
 from .schemas import Token, UserSignupLoginSchema
 

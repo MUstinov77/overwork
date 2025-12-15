@@ -11,7 +11,9 @@ from app.core.utils.db_querys import (
     get_workspace
     )
 from app.db.db import session_provider
-from app.db.models import Employee, Log, Workspace
+from app.models.employee import Employee
+from app.models.workspace import Workspace
+from app.models.log import Log
 
 from ..schemas import EmployeeRequest, EmployeeResponse, LogCreate
 
