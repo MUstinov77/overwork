@@ -1,10 +1,11 @@
 from sqlalchemy import ForeignKey, String, event
-from app.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.core.enum import LogType
-from app.models.log import Log
-from app.models.employee_logs import employees_logs_table
 
+from app.core.enum import LogType
+from app.models.base import Base
+from app.models.employee_logs import employees_logs_table
+from app.models.statistics import Statistics
+from app.models.log import Log
 
 
 class Employee(Base):
@@ -16,25 +17,14 @@ class Employee(Base):
     name: Mapped[str] = mapped_column(String())
     surname: Mapped[str] = mapped_column(String(), nullable=True)
     fathers_name: Mapped[str] = mapped_column(String(), nullable=True)
-
     position: Mapped[str] = mapped_column(String(), nullable=True)
 
-    # base stats for work day
-    overwork_time: Mapped[int] = mapped_column(nullable=True)
-    work_time: Mapped[int] = mapped_column(nullable=True)
-
-    # periodic attrs
-    sick_days: Mapped[int] = mapped_column(nullable=True)
-    vacation: Mapped[int] = mapped_column(nullable=True)
-    vacation_surplus: Mapped[int] = mapped_column(nullable=True)
-    days_off: Mapped[int] = mapped_column(nullable=True)
     workspace_id: Mapped[int] = mapped_column(
         ForeignKey(
             "workspaces.id",
             ondelete="CASCADE"
         )
     )
-
 
     workspace = relationship(
         "Workspace",
@@ -49,9 +39,16 @@ class Employee(Base):
         passive_deletes=True,
     )
 
+    statistics = relationship(
+        "Statistics",
+        uselist=False,
+        back_populates="employee",
+        cascade="all, delete",
+    )
+
 
 @event.listens_for(Employee.logs, "append")
-def count_overwork(target, value, initiator):
+def count_overwork(target: Employee, value: Log, initiator):
     match value.type:
         case LogType.work_day:
             time_worked = value.data

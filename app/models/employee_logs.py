@@ -1,4 +1,5 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, Table
+
 from app.models.base import Base
 
 employees_logs_table = Table(

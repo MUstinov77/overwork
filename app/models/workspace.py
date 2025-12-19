@@ -1,9 +1,10 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.models.base import Base
 from app.models.employee import Employee
 from app.models.log import Log
-from app.models.base import Base
+from app.models.statistics import Statistics
 
 
 class Workspace(Base):
@@ -29,3 +30,8 @@ class Workspace(Base):
         cascade="all, delete",
         passive_deletes=True
     )
+
+
+@event.listens_for(Workspace.employees, "append")
+def receive_after_append(target, value, initiator):
+    value.statistics = Statistics()

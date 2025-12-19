@@ -15,7 +15,7 @@ from app.models.employee import Employee
 from app.models.workspace import Workspace
 from app.models.log import Log
 
-from ..schemas import EmployeeRequest, EmployeeResponse, LogCreate
+from app.api.schemas import EmployeeRequest, EmployeeResponse, LogCreate
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -25,7 +25,7 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[EmployeeResponse],
+    response_model=list[EmployeeRequest],
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
     }
@@ -82,7 +82,7 @@ async def get_log_by_employee_id(
 
 @router.post(
     "/",
-    response_model=EmployeeResponse,
+    response_model=EmployeeRequest,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
@@ -98,13 +98,10 @@ async def create_employee(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Workspace not found"}
         )
+
     employee_data = data.model_dump(
         exclude_none=True
     )
-    vacation_surplus = employee_data.get("vacation_surplus", None)
-    if not vacation_surplus:
-        if employee_data.get("vacation", None):
-            employee_data["vacation_surplus"] = employee_data["vacation"]
     employee = Employee(**employee_data)
     workspace.employees.append(employee)
     return employee

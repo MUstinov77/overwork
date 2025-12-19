@@ -1,9 +1,6 @@
 from datetime import date, datetime, timezone
 
-from fastapi import Depends
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, computed_field
-from sqlalchemy import True_
 
 from app.core.enum import LogType
 
@@ -11,6 +8,12 @@ from app.core.enum import LogType
 class WorkspaceCreate(BaseModel):
     name: str
 
+class StatisticsRequest(BaseModel):
+    vacation: int | None = None
+    vacation_surplus: int | None = None
+    days_off: int | None = None
+    overwork_time: int | None = None
+    sick_days: int | None = None
 
 class EmployeeRequest(BaseModel):
     name: str
@@ -18,14 +21,6 @@ class EmployeeRequest(BaseModel):
     fathers_name: str | None = None
 
     position: str | None = None
-    vacation: int | None = None
-    vacation_surplus: int | None = 0
-    days_off: int | None = None
-    work_time: int | None = None
-    overwork_time: int | None = None
-    sick_days: int | None = None
-
-
 
 
 
@@ -64,3 +59,5 @@ class LogResponse(BaseModel):
     log_date: date
     data: int | None = None
     employees: list[EmployeeResponse]
+
+

@@ -1,7 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, status
-from fastapi.responses import JSONResponse
+from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -46,3 +45,8 @@ def get_log_by_id(
         where(Log.id == log_id).
         join(Workspace.logs)
     ).scalar_one_or_none()
+
+def get_employee_stats(
+        employee: Employee,
+):
+    return employee.statistics
