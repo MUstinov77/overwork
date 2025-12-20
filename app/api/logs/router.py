@@ -106,7 +106,7 @@ async def create_log(
         )
         employee.logs.append(log)
         await change_employee_data_via_log(
-            employee,
+            employee.statistics,
             attr_name,
             data,
             "create",
@@ -122,24 +122,15 @@ async def delete_log(
         log: Annotated[Log, Depends(get_log_by_id)],
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)],
-        employees_ids: list[int]
 ):
-    for employee_id in employees_ids:
-        employee = get_employee_by_id(
-            employee_id,
-            workspace.user,
-            workspace,
-            session
-        )
+    for employee in log.employees:
         await change_employee_data_via_log(
-            employee,
+            employee.statistics,
             log.type.name,
             log.data,
             "delete"
         )
-        employee.logs.remove(log)
-    if not log.employees:
-        session.delete(log)
+    session.delete(log)
     return {"message": "log deleted"}
 
 

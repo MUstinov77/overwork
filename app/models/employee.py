@@ -36,7 +36,6 @@ class Employee(Base):
         secondary=employees_logs_table,
         back_populates="employees",
         cascade="all, delete",
-        passive_deletes=True,
     )
 
     statistics = relationship(

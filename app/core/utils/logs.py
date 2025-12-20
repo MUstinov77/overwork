@@ -23,16 +23,16 @@ async def change_employee_data_via_log(
 
 
 def calculate_sick_days(
-        employee: Statistics,
+        employee_stats: Statistics,
         action: str,
         data: int = 1
 ):
     data = data or 1
     match action:
         case "create":
-            employee.sick_days += data
+            employee_stats.sick_days += data
         case "delete":
-            employee.sick_days -= data
+            employee_stats.sick_days -= data
         case _:
             raise ValueError("Action not found")
 

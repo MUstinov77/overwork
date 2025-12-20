@@ -23,12 +23,10 @@ class Workspace(Base):
     logs: Mapped[list["Log"]] = relationship(
         back_populates="workspace",
         cascade="all, delete",
-        passive_deletes=True
     )
     employees: Mapped[list["Employee"]] = relationship(
         back_populates="workspace",
         cascade="all, delete",
-        passive_deletes=True
     )
 
 

@@ -1,10 +1,11 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, UniqueConstraint
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, UniqueConstraint, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.enum import LogType
 from app.models.base import Base
+from app.db.db import session_provider
 from app.models.employee_logs import employees_logs_table
 
 
@@ -35,12 +36,10 @@ class Log(Base):
     )
 
     employees = relationship(
-        #uselist=True,
         "Employee",
         uselist=True,
         secondary=employees_logs_table,
         back_populates="logs",
-        passive_deletes=True,
     )
     __table_args__ = (
         UniqueConstraint("log_date", "workspace_id", name="unique_log"),
