@@ -79,6 +79,18 @@ async def get_log_by_employee_id(
         )
     return log
 
+@router.delete(
+    "/{employee_id}/logs/{log_id}",
+)
+async def delete_employee_log(
+        employee: Annotated[Employee, Depends(get_employee_by_id)],
+        log: Annotated[Log, Depends(get_log_by_id)],
+        session: Annotated[Session, Depends(session_provider)]
+):
+    employee.logs.remove(log)
+    if not log.employees:
+        session.delete(log)
+    return {"message": "Log deleted"}
 
 @router.post(
     "/",

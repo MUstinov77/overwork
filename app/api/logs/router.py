@@ -120,7 +120,6 @@ async def create_log(
 )
 async def delete_log(
         log: Annotated[Log, Depends(get_log_by_id)],
-        workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)],
 ):
     for employee in log.employees:

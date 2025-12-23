@@ -45,6 +45,6 @@ class Statistics(Base):
 
 
 @event.listens_for(Statistics, "before_insert")
-def receive_after_insert(mapper, connection, target):
+def receive_before_insert(mapper, connection, target):
     if target.vacation_surplus is None:
         target.vacation_surplus = target.vacation

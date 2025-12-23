@@ -1,6 +1,7 @@
 from sqlalchemy import ForeignKey, String, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.db.db import session_provider
 from app.models.base import Base
 from app.models.employee import Employee
 from app.models.log import Log
@@ -31,5 +32,5 @@ class Workspace(Base):
 
 
 @event.listens_for(Workspace.employees, "append")
-def receive_after_append(target, value, initiator):
+def receive_append(target, value, initiator):
     value.statistics = Statistics()
