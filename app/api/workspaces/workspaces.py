@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import Response
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
+from app.core.exceptions import NotFoundException
 from app.core.utils.auth import get_current_user
 from app.core.utils.db_querys import get_workspace
 from app.db.db import session_provider
@@ -33,11 +34,6 @@ router.include_router(
 async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
 ):
-    if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
     return user.workspaces
 
 
@@ -48,11 +44,6 @@ async def get_my_workspaces(
 async def get_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
-    if not workspace:
-        raise HTTPException(
-            status_code=404,
-            detail="Workspace not found"
-        )
     return workspace
 
 
@@ -81,11 +72,6 @@ async def delete_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Session = Depends(session_provider)
 ):
-    if not workspace:
-        raise HTTPException(
-            status_code=404,
-            detail="Workspace not found"
-        )
     session.delete(workspace)
     session.commit()
     return Response(content="Workspace deleted")
@@ -93,7 +79,7 @@ async def delete_workspace_by_id(
 
 @router.patch(
     "/{workspace_id}",
-    response_model=WorkspaceRetrieve,
+    response_model=WorkspaceRetrieve
 )
 async def update_workspace(
         data: WorkspaceCreateUpdate,

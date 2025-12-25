@@ -14,6 +14,7 @@ from app.models.user import User
 from app.schemas.auth import TokenData
 
 from .encrypt import verify_password
+from ..exceptions import NotAuthenticatedException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
@@ -58,21 +59,16 @@ async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
         session: Session = Depends(session_provider)
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         if not username:
-            raise credentials_exception
+            raise NotAuthenticatedException
         token_data = TokenData(username=username)
     except InvalidTokenError:
-        raise credentials_exception
+        raise NotAuthenticatedException
 
     user = get_user(token_data.username, session)
     if not user:
-        raise credentials_exception
+        raise NotAuthenticatedException
     return user

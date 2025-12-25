@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import NotFoundException
 from app.core.utils.auth import get_current_user
 from app.db.db import session_provider
 from app.models.employee import Employee
@@ -22,6 +23,8 @@ def get_workspace(
         where(Workspace.id == workspace_id).
         where(Workspace.user == user)
     ).scalar_one_or_none()
+    if not workspace:
+        raise NotFoundException
     return workspace
 
 def get_employee_by_id(
