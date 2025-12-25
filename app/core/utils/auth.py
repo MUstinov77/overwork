@@ -9,9 +9,9 @@ from jwt import InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.schemas.auth import TokenData
 from app.db.db import session_provider
 from app.models.user import User
+from app.schemas.auth import TokenData
 
 from .encrypt import verify_password
 

@@ -1,11 +1,18 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, UniqueConstraint, event
+from sqlalchemy import (
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    UniqueConstraint,
+    event
+    )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.enum import LogType
-from app.models.base import Base
 from app.db.db import session_provider
+from app.models.base import Base
 from app.models.employee_logs import employees_logs_table
 
 

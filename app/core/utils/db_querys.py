@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from app.core.utils.auth import get_current_user
 from app.db.db import session_provider
 from app.models.employee import Employee
-from app.models.workspace import Workspace
-from app.models.user import User
 from app.models.log import Log
+from app.models.user import User
+from app.models.workspace import Workspace
 
 
 def get_workspace(

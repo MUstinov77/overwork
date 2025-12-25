@@ -1,18 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
-from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 from app.core.utils.auth import get_current_user
 from app.core.utils.db_querys import get_workspace
 from app.db.db import session_provider
 from app.models.user import User
 from app.models.workspace import Workspace
+from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 
 router = APIRouter(
     prefix="/workspaces",

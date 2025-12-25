@@ -1,8 +1,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse, Response
 from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
@@ -13,10 +13,9 @@ from app.core.utils.db_querys import (
     )
 from app.db.db import session_provider
 from app.models.employee import Employee
+from app.models.log import Log
 from app.models.statistics import Statistics
 from app.models.workspace import Workspace
-from app.models.log import Log
-
 from app.schemas.employee import EmployeeCreateUpdate, EmployeeRetrieve
 from app.schemas.log import LogCreateUpdate, LogRetrieve
 
