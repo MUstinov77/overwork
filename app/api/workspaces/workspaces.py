@@ -76,7 +76,6 @@ async def create_workspace(
 @router.delete(
     "/{workspace_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    response_model=WorkspaceRetrieve
 )
 async def delete_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
