@@ -1,7 +1,6 @@
 from sqlalchemy import ForeignKey, String, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.db import session_provider
 from app.models.base import Base
 from app.models.employee import Employee
 from app.models.log import Log

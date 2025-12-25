@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
-from app.schemas.workspace import WorkspaceCreateUpdateRetrieve
+from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 from app.core.utils.auth import get_current_user
 from app.core.utils.db_querys import get_workspace
 from app.db.db import session_provider
@@ -28,7 +28,7 @@ router.include_router(
 
 @router.get(
     "/",
-    response_model=list[WorkspaceCreateUpdateRetrieve],
+    response_model=list[WorkspaceRetrieve],
 )
 async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
@@ -43,7 +43,7 @@ async def get_my_workspaces(
 
 @router.get(
     "/{workspace_id}",
-    response_model=WorkspaceCreateUpdateRetrieve,
+    response_model=WorkspaceRetrieve,
 )
 async def get_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
@@ -58,23 +58,25 @@ async def get_workspace_by_id(
 
 @router.post(
     "/",
-    response_model=WorkspaceCreateUpdateRetrieve,
+    response_model=WorkspaceRetrieve,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_workspace(
-    data: WorkspaceCreateUpdateRetrieve,
+    data: WorkspaceCreateUpdate,
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(session_provider),
 ):
     workspace = Workspace(**data.model_dump())
     workspace.user_id = user.id
     session.add(workspace)
+    session.commit()
     return workspace
 
 
 @router.delete(
     "/{workspace_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=WorkspaceRetrieve
 )
 async def delete_workspace_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
@@ -86,19 +88,21 @@ async def delete_workspace_by_id(
             detail="Workspace not found"
         )
     session.delete(workspace)
+    session.commit()
     return Response(content="Workspace deleted")
 
 
 @router.patch(
     "/{workspace_id}",
-    response_model=WorkspaceCreateUpdateRetrieve,
+    response_model=WorkspaceRetrieve,
 )
 async def update_workspace(
-        data: WorkspaceCreateUpdateRetrieve,
+        data: WorkspaceCreateUpdate,
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)]
 ):
     session.execute(
         update(Workspace).where(Workspace.id == workspace.id).values(**data.model_dump())
     )
+    session.commit()
     return workspace
