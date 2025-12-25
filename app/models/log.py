@@ -21,7 +21,7 @@ class Log(Base):
         default=datetime.now(timezone.utc)
     )
 
-    log_date: Mapped[date] = mapped_column(Date())
+    date: Mapped[date] = mapped_column(Date())
     data: Mapped[int] = mapped_column(nullable=True)
 
     workspace_id: Mapped[int] = mapped_column(
@@ -42,5 +42,5 @@ class Log(Base):
         back_populates="logs",
     )
     __table_args__ = (
-        UniqueConstraint("log_date", "workspace_id", name="unique_log"),
+        UniqueConstraint("date", "workspace_id", name="unique_log"),
     )

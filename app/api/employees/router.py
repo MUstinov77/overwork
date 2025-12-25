@@ -18,7 +18,7 @@ from app.models.workspace import Workspace
 from app.models.log import Log
 
 from app.schemas.employee import EmployeeCreateUpdate, EmployeeRetrieve
-from app.schemas.log import LogCreateUpdate
+from app.schemas.log import LogCreateUpdate, LogRetrieve
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -57,6 +57,7 @@ async def get_employee_by_id(
 
 @router.get(
     "/{employee_id}/logs",
+    response_model=list[LogRetrieve]
 )
 async def get_employee_logs(
         employee: Annotated[Employee, Depends(get_employee_by_id)],
@@ -66,7 +67,7 @@ async def get_employee_logs(
 
 @router.get(
     "/{employee_id}/logs/{log_id}",
-    response_model=LogCreateUpdate,
+    response_model=LogRetrieve,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Invalid request"}
     }

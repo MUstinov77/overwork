@@ -1,14 +1,14 @@
-from datetime import date
+from datetime import date as py_date
 
 from pydantic import BaseModel
 
 from app.core.enum import LogType
-from app.schemas.employee import EmployeeResponse
+from app.schemas.employee import EmployeeRetrieve
 
 
 class LogBase(BaseModel):
     type: LogType = LogType.work_day
-    date: date = date.today()
+    date: py_date = py_date.today()
     data: int | None = None
 
 
@@ -16,6 +16,6 @@ class LogCreateUpdate(LogBase):
     employees_id: list[int] = []
 
 
-class LogResponse(LogBase):
+class LogRetrieve(LogBase):
 
-    employees: list[EmployeeResponse]
+    employees: list[EmployeeRetrieve]

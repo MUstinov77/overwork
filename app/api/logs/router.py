@@ -5,7 +5,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.api.schemas import LogCreate, LogResponse
+from app.api.schemas import LogResponse
+from app.schemas.log import LogCreateUpdate, LogRetrieve
 from app.core.utils.db_querys import (
     get_current_user,
     get_employee_by_id,
@@ -29,7 +30,7 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[LogResponse],
+    response_model=list[LogRetrieve],
     response_model_exclude_none=True,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"}
@@ -53,7 +54,7 @@ async def get_logs(
 
 @router.get(
     "/{log_id}",
-    response_model=LogCreate,
+    response_model=LogRetrieve,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Log not found"}
     }
@@ -71,15 +72,16 @@ async def get_logs_by_id(
 
 @router.post(
     "/",
-    response_model=LogResponse,
+    response_model=LogRetrieve,
     response_model_exclude_none=True,
+    status_code=status.HTTP_201_CREATED,
     tags=["workspaces_logs"],
     responses={
         status.HTTP_400_BAD_REQUEST: {"message": "Log should get almost one employee id"}
     }
 )
 async def create_log(
-    data: LogCreate,
+    data: LogCreateUpdate,
     workspace: Annotated[Workspace, Depends(get_workspace)],
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(session_provider)],
@@ -135,10 +137,10 @@ async def delete_log(
 
 @router.patch(
     "/{log_id}",
-    response_model=LogResponse,
+    response_model=LogRetrieve,
 )
 async def update_log_by_id(
-        updated_data: LogCreate,
+        updated_data: LogCreateUpdate,
         log: Annotated[Log, Depends(get_logs_by_id)],
         session: Annotated[Session, Depends(session_provider)],
         user: Annotated[User, Depends(get_current_user)],
