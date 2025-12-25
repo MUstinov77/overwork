@@ -28,8 +28,3 @@ class Workspace(Base):
         back_populates="workspace",
         cascade="all, delete",
     )
-
-
-@event.listens_for(Workspace.employees, "append")
-def receive_append(target, value, initiator):
-    value.statistics = Statistics()

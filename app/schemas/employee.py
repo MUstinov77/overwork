@@ -9,6 +9,6 @@ class EmployeeCreateUpdate(BaseModel):
     position: str | None = None
 
 
-class EmployeeResponse(EmployeeCreateUpdate):
+class EmployeeRetrieve(EmployeeCreateUpdate):
 
     statistics: StatisticsSchema

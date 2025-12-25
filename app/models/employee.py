@@ -5,6 +5,7 @@ from app.core.enum import LogType
 from app.models.base import Base
 from app.models.employee_logs import employees_logs_table
 from app.models.log import Log
+from app.models.statistics import Statistics
 
 
 class Employee(Base):

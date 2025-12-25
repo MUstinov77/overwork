@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse, Response
+from fastapi.exceptions import HTTPException
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
@@ -12,10 +13,12 @@ from app.core.utils.db_querys import (
     )
 from app.db.db import session_provider
 from app.models.employee import Employee
+from app.models.statistics import Statistics
 from app.models.workspace import Workspace
 from app.models.log import Log
 
-from app.api.schemas import EmployeeRequest, EmployeeResponse, LogCreate
+from app.schemas.employee import EmployeeCreateUpdate, EmployeeRetrieve
+from app.schemas.log import LogCreateUpdate
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -25,7 +28,7 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[EmployeeRequest],
+    response_model=list[EmployeeRetrieve],
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
     }
@@ -40,7 +43,7 @@ async def get_workspace_employees(
 
 @router.get(
     "/{employee_id}",
-    response_model=EmployeeResponse,
+    response_model=EmployeeRetrieve,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Employee not found"},
     }
@@ -49,7 +52,7 @@ async def get_employee_by_id(
         employee: Annotated[Employee, Depends(get_employee_by_id)],
 ):
     if not employee:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Employee not found"})
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return employee
 
 @router.get(
@@ -63,7 +66,7 @@ async def get_employee_logs(
 
 @router.get(
     "/{employee_id}/logs/{log_id}",
-    response_model=LogCreate,
+    response_model=LogCreateUpdate,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Invalid request"}
     }
@@ -73,9 +76,8 @@ async def get_log_by_employee_id(
         log: Annotated[Log, Depends(get_log_by_id)],
 ):
     if not log or not employee:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Invalid request"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
         )
     return log
 
@@ -94,7 +96,7 @@ async def delete_employee_log(
 
 @router.post(
     "/",
-    response_model=EmployeeRequest,
+    response_model=EmployeeRetrieve,
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"},
@@ -102,7 +104,7 @@ async def delete_employee_log(
     },
 )
 async def create_employee(
-        data: EmployeeRequest,
+        data: EmployeeCreateUpdate,
         workspace: Annotated[Workspace, Depends(get_workspace)],
 ):
     if not workspace:
@@ -115,6 +117,7 @@ async def create_employee(
         exclude_none=True
     )
     employee = Employee(**employee_data)
+    employee.statistics = Statistics()
     workspace.employees.append(employee)
     return employee
 
@@ -141,13 +144,14 @@ async def delete_employee(
 
 @router.patch(
     "/{employee_id}",
-    response_model=EmployeeResponse
+    response_model=EmployeeRetrieve
 )
 async def update_employee(
-        data: EmployeeResponse,
+        data: EmployeeCreateUpdate,
         employee: Annotated[Employee, Depends(get_employee_by_id)],
         session: Annotated[Session, Depends(session_provider)],
 ):
+
     updated_data = data.model_dump(
         exclude_unset=True,
         exclude_none=True
