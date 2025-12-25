@@ -74,7 +74,7 @@ async def delete_workspace_by_id(
 ):
     session.delete(workspace)
     session.commit()
-    return Response(content="Workspace deleted")
+    return workspace
 
 
 @router.patch(
