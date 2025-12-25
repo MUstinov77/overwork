@@ -14,7 +14,7 @@ from app.core.utils.encrypt import get_hashed_password
 from app.db.db import session_provider
 from app.models.user import User
 
-from .schemas import Token, UserSignupLoginSchema
+from app.schemas.auth import Token, UserSignupLoginSchema
 
 BASE_PREFIX = "/auth"
 
