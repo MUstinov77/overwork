@@ -46,11 +46,14 @@ def get_log_by_id(
         log_id: int,
         session: Annotated[Session, Depends(session_provider)]
 ):
-    return session.execute(
+    log = session.execute(
         select(Log).
         where(Log.id == log_id).
         join(Workspace.logs)
     ).scalar_one_or_none()
+    if not log:
+        raise NotFoundException
+    return log
 
 def get_employee_stats(
         employee: Employee,
