@@ -13,8 +13,8 @@ from app.db.db import session_provider
 from app.models.user import User
 from app.schemas.auth import TokenData
 
-from .encrypt import verify_password
 from ..exceptions import NotAuthenticatedException
+from .encrypt import verify_password
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

@@ -5,12 +5,12 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.core.utils.logs import change_employee_data_via_log
 from app.core.utils.db_querys import (
     get_employee_by_id,
     get_log_by_id,
     get_workspace
     )
+from app.core.utils.logs import change_employee_data_via_log
 from app.db.db import session_provider
 from app.models.employee import Employee
 from app.models.log import Log
