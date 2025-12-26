@@ -33,11 +33,14 @@ def get_employee_by_id(
         workspace: Annotated[Workspace, Depends(get_workspace)],
         session: Annotated[Session, Depends(session_provider)]
 ):
-    return session.execute(
+    employee = session.execute(
         select(Employee).
         where(Employee.id == employee_id).
         where(Employee.workspace == workspace)
     ).scalar_one_or_none()
+    if not employee:
+        raise NotFoundException
+    return employee
 
 def get_log_by_id(
         log_id: int,
