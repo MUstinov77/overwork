@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.api.auth.router import router as auth_router
-from app.api.workspaces.workspaces import router as workspaces_router
+from app.api.workspaces.router import router as workspaces_router
 from app.db.db import lifespan
 
 app = FastAPI(
