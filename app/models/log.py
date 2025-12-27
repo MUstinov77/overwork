@@ -6,12 +6,10 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     UniqueConstraint,
-    event
     )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.enum import LogType
-from app.db.db import session_provider
 from app.models.base import Base
 from app.models.employee_logs import employees_logs_table
 
