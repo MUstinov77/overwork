@@ -1,11 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.api.schemas import LogResponse
 from app.core.utils.db_querys import (
     get_current_user,
     get_employee_by_id,
@@ -32,41 +30,20 @@ router = APIRouter(
     "/",
     response_model=list[LogRetrieve],
     response_model_exclude_none=True,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"description": "Workspace not found"}
-    }
 )
 async def get_logs(
         workspace: Annotated[Workspace, Depends(get_workspace)]
 ):
-    if not workspace:
-        return JSONResponse(
-            content={"message": "Workspace not found"},
-            status_code=status.HTTP_404_NOT_FOUND,
-        )
-    if not workspace.logs:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Empty logs"}
-        )
     return workspace.logs
 
 
 @router.get(
     "/{log_id}",
     response_model=LogRetrieve,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"description": "Log not found"}
-    }
 )
 async def get_logs_by_id(
         log: Annotated[Log, Depends(get_log_by_id)]
 ):
-    if not log:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"message": "Log not found"}
-        )
     return log
 
 
@@ -76,9 +53,6 @@ async def get_logs_by_id(
     response_model_exclude_none=True,
     status_code=status.HTTP_201_CREATED,
     tags=["workspaces_logs"],
-    responses={
-        status.HTTP_400_BAD_REQUEST: {"message": "Log should get almost one employee id"}
-    }
 )
 async def create_log(
     data: LogCreateUpdate,
@@ -92,9 +66,9 @@ async def create_log(
     )
     employees_ids = log_data.pop("employees_id") or None
     if not employees_ids:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Log should get almost one employee id"}
+            detail="Log should have at last one employee id"
         )
     log = Log(**log_data)
     workspace.logs.append(log)
@@ -132,7 +106,7 @@ async def delete_log(
             "delete"
         )
     session.delete(log)
-    return {"message": "log deleted"}
+    return
 
 
 @router.patch(
@@ -149,6 +123,19 @@ async def update_log_by_id(
     updated_data = updated_data.model_dump(exclude_none=True)
     employees_ids = updated_data.pop("employees_id") or None
     session.execute(update(Log).where(Log.id == log.id).values(**updated_data))
+    for employee in log.employees:
+        await change_employee_data_via_log(
+            employee.statistics,
+            old_log_type,
+            old_log_data,
+            "delete"
+        )
+        await change_employee_data_via_log(
+            employee.statistics,
+            log.type.name,
+            log.data,
+            "create"
+        )
     if employees_ids:
         for employee_id in employees_ids:
             employee = get_employee_by_id(
@@ -157,24 +144,12 @@ async def update_log_by_id(
                 log.workspace,
                 session
             )
-            log.employees.append(employee)
-            await change_employee_data_via_log(
-                employee,
-                log.type.name,
-                log.data,
-                "create"
-            )
-    for employee in log.employees:
-        await change_employee_data_via_log(
-            employee,
-            old_log_type,
-            old_log_data,
-            "delete"
-        )
-        await change_employee_data_via_log(
-            employee,
-            log.type.name,
-            log.data,
-            "create"
-        )
+            if employee not in log.employees:
+                log.employees.append(employee)
+                await change_employee_data_via_log(
+                    employee.statistics,
+                    log.type.name,
+                    log.data,
+                    "create"
+                )
     return log
