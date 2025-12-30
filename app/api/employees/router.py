@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+
 from app.core.utils.db_querys import (
     get_employee_by_id,
     get_log_by_id,

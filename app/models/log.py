@@ -1,9 +1,11 @@
 from datetime import date, datetime, timezone
 
 from sqlalchemy import (
+    select,
     Date,
     DateTime,
     Enum,
+    event,
     ForeignKey,
     UniqueConstraint,
     )
@@ -12,6 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.enum import LogType
 from app.models.base import Base
 from app.models.employee_logs import employees_logs_table
+
 
 
 class Log(Base):

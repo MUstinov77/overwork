@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.core.utils.auth import get_current_user
 from app.core.utils.db_querys import (
-    get_current_user,
     get_employee_by_id,
     get_log_by_id,
     get_workspace
@@ -13,13 +13,11 @@ from app.core.utils.db_querys import (
 from app.core.utils.logs import change_employee_data_via_log
 from app.db.db import session_provider
 from app.models.log import Log
-from app.models.user import User
 from app.models.workspace import Workspace
 from app.schemas.log import LogCreateUpdate, LogRetrieve
 
 router = APIRouter(
     dependencies=(
-        Depends(get_workspace),
         Depends(get_current_user),
     ),
     tags=["logs"],
@@ -57,8 +55,6 @@ async def get_logs_by_id(
 async def create_log(
     data: LogCreateUpdate,
     workspace: Annotated[Workspace, Depends(get_workspace)],
-    user: Annotated[User, Depends(get_current_user)],
-    session: Annotated[Session, Depends(session_provider)],
 ):
     log_data = data.model_dump(
         exclude_none=True,
@@ -74,12 +70,7 @@ async def create_log(
     workspace.logs.append(log)
     attr_name, data = log.type.name, log.data
     for employee_id in employees_ids:
-        employee = get_employee_by_id(
-            employee_id,
-            user,
-            workspace,
-            session
-        )
+        employee = get_employee_by_id(employee_id)
         employee.logs.append(log)
         await change_employee_data_via_log(
             employee.statistics,
@@ -117,7 +108,6 @@ async def update_log_by_id(
         updated_data: LogCreateUpdate,
         log: Annotated[Log, Depends(get_logs_by_id)],
         session: Annotated[Session, Depends(session_provider)],
-        user: Annotated[User, Depends(get_current_user)],
 ):
     old_log_type, old_log_data = log.type.name, log.data
     updated_data = updated_data.model_dump(exclude_none=True)
@@ -138,12 +128,7 @@ async def update_log_by_id(
         )
     if employees_ids:
         for employee_id in employees_ids:
-            employee = get_employee_by_id(
-                employee_id,
-                user,
-                log.workspace,
-                session
-            )
+            employee = get_employee_by_id(employee_id)
             if employee not in log.employees:
                 log.employees.append(employee)
                 await change_employee_data_via_log(
