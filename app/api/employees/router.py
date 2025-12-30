@@ -6,7 +6,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 
-from app.core.utils.db_querys import (
+from app.core.utils.db_queries import (
     get_employee_by_id,
     get_log_by_id,
     get_workspace
