@@ -11,7 +11,7 @@ from app.core.utils.db_queries import (
     get_workspace
     )
 from app.core.utils.logs import change_employee_data_via_log
-from app.db.db import session_provider
+from app.core.datastore.db import session_provider
 from app.models.log import Log
 from app.models.workspace import Workspace
 from app.schemas.log import LogCreateUpdate, LogRetrieve

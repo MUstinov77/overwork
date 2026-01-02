@@ -11,7 +11,7 @@ from app.core.utils.auth import (
     create_access_token
     )
 from app.core.utils.encrypt import get_hashed_password
-from app.db.db import session_provider
+from app.core.datastore.db import session_provider
 from app.models.user import User
 from app.schemas.auth import Token, UserSignupLoginSchema
 

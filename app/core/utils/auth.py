@@ -2,14 +2,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, status
-from fastapi.exceptions import HTTPException
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.db import session_provider
+from app.core.datastore.db import session_provider
 from app.models.user import User
 from app.schemas.auth import TokenData
 

@@ -8,7 +8,7 @@ from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
 from app.core.utils.auth import get_current_user
 from app.core.utils.db_queries import get_workspace
-from app.db.db import session_provider
+from app.core.datastore.db import session_provider
 from app.models.user import User
 from app.models.workspace import Workspace
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
