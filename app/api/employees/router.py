@@ -54,11 +54,11 @@ async def get_employee_by_id(
 @router.post(
     "/",
     response_model=EmployeeRetrieve,
+    response_model_exclude={"statistics"},
     status_code=status.HTTP_201_CREATED,
 )
 async def create_employee(
         data: EmployeeCreateUpdate,
-        session: Annotated[Session, Depends(session_provider)],
         workspace: Annotated[Workspace, Depends(get_workspace)]
 ):
     employee_data = data.model_dump(
@@ -66,9 +66,8 @@ async def create_employee(
     )
     employee = Employee(**employee_data)
     employee.workspace_id = workspace.id
-    stats = Statistics()
     employee.statistics = Statistics()
-    # workspace.employees.append(employee)
+    workspace.employees.append(employee)
     return employee
 
 
