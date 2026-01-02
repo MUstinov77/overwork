@@ -1,23 +1,26 @@
+from app.core.utils.db_queries import get_logs_per_month
 from app.models.statistics import Statistics
+from app.models.log import Log
+from sqlalchemy.orm import Session
 
 
 async def change_employee_data_via_log(
         employee_stats: Statistics,
-        attr_name: str,
-        data: int,
+        log: Log,
         action: str = "create" or "delete",
+        session: Session | None = None
 ):
     funcs_by_field = {
         "sick_day": calculate_sick_days,
         "vacation": calculate_vacation_surplus,
         "day_off": calculate_days_off,
-        "work_day": calculate_work_time,
+        "work_day": calculate_overwork_time,
     }
-    calculating_func = funcs_by_field.get(attr_name, None)
+    calculating_func = funcs_by_field.get(log.type.name, None)
     if not calculating_func:
         raise ValueError("Field not found")
     try:
-        calculating_func(employee_stats, action, data)
+        calculating_func(employee_stats, log, action, session)
     except ValueError:
         return
 
@@ -66,16 +69,38 @@ def calculate_days_off(
         case _:
             raise ValueError("Action not found")
 
-def calculate_work_time(
+def calculate_overwork_time(
         employee_stats: Statistics,
+        log: Log,
         action: str,
-        data: int,
+        session: Session | None = None
 ):
-    data = data or 8
+    data = log.data or 8
     match action:
         case "create":
-            employee_stats.time_worked_per_month += data
+            logs_per_month = get_logs_per_month(
+                log,
+                employee_stats.employee,
+                session
+            )
+
+            if (
+                employee_stats.overwork_updated_date is not None
+                and
+                employee_stats.overwork_updated_date.month == log.date.month
+                and
+                employee_stats.overwork_updated_date.year == log.date.year
+            ):
+                employee_stats.overwork_time += data
+                employee_stats.overwork_updated_date = log.date
+            else:
+                overwork_time = data
+                for month_log in logs_per_month:
+                    overwork_time += month_log.data
+                if overwork_time > 164:
+                    employee_stats.overwork_time += overwork_time - 164
+                    employee_stats.overwork_updated_date = log.date
         case "delete":
-            employee_stats.time_worked_per_month -= data
+            employee_stats.overwork_time -= data
         case _:
             raise ValueError("Action not found")

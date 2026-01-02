@@ -14,6 +14,9 @@ from app.models.workspace import Workspace
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 
 router = APIRouter(
+    dependencies=(
+        Depends(get_current_user),
+    ),
     prefix="/workspaces",
     tags=["workspaces"],
 )

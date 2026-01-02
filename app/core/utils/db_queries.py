@@ -1,14 +1,16 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import select, extract
+from sqlalchemy import select, extract, and_
 from sqlalchemy.orm import Session
 
+from app.core.enum import LogType
 from app.core.exceptions import NotFoundException
 from app.db.db import session_provider
 from app.models.log import Log
 from app.models.employee import Employee
 from app.models.workspace import Workspace
+from app.models.employee_logs import employees_logs_table
 
 
 def get_workspace(
@@ -38,16 +40,23 @@ def get_log_by_id(
     return log
 
 def get_logs_per_month(
-        log,
-        logs,
+        log: Log,
+        employee: Employee,
         session: Session = Depends(session_provider)
 ):
     result = session.execute(
-        select(logs).
+        select(Log).
+        where(Log.type == LogType.work_day).
+        join(employees_logs_table).
         filter(
-            extract("year", Log.date) == log.date.year,
-            extract("month", Log.date) == log.date.month
-        )).all()
+            and_(
+                employees_logs_table.c.employee_id == employee.id,
+                extract("year", Log.date) == log.date.year,
+                extract("month", Log.date) == log.date.month
+            )
+        ).
+        order_by(Log.date)
+    ).scalars().all()
     return result
 
 def get_employee_by_id(

@@ -1,4 +1,6 @@
-from sqlalchemy import ForeignKey, Integer, event
+from datetime import date
+
+from sqlalchemy import ForeignKey, Integer, event, Date, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -30,6 +32,10 @@ class Statistics(Base):
     days_off: Mapped[int] = mapped_column(
         Integer(),
         default=0
+    )
+    overwork_updated_date: Mapped[date] = mapped_column(
+        Date(),
+        nullable=True,
     )
 
     employee_id: Mapped[int] = mapped_column(

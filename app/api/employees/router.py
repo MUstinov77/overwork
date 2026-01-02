@@ -5,11 +5,11 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-
 from app.core.utils.db_queries import (
     get_employee_by_id,
     get_log_by_id,
-    get_workspace
+    get_workspace,
+    get_logs_per_month
     )
 from app.core.utils.logs import change_employee_data_via_log
 from app.db.db import session_provider
@@ -21,6 +21,9 @@ from app.schemas.employee import EmployeeCreateUpdate, EmployeeRetrieve
 from app.schemas.log import LogCreateUpdate, LogRetrieve
 
 router = APIRouter(
+    dependencies=(
+        Depends(get_workspace),
+    ),
     prefix="/{workspace_id}/employees",
     tags=["employees"],
 )
@@ -55,14 +58,17 @@ async def get_employee_by_id(
 )
 async def create_employee(
         data: EmployeeCreateUpdate,
-        workspace: Annotated[Workspace, Depends(get_workspace)],
+        session: Annotated[Session, Depends(session_provider)],
+        workspace: Annotated[Workspace, Depends(get_workspace)]
 ):
     employee_data = data.model_dump(
         exclude_none=True
     )
     employee = Employee(**employee_data)
+    employee.workspace_id = workspace.id
+    stats = Statistics()
     employee.statistics = Statistics()
-    workspace.employees.append(employee)
+    # workspace.employees.append(employee)
     return employee
 
 
@@ -117,16 +123,18 @@ async def get_employee_logs(
 async def create_log_via_employee(
         data: LogCreateUpdate,
         employee: Annotated[Employee, Depends(get_employee_by_id)],
+        session: Annotated[Session, Depends(session_provider)],
 ):
     log_data = data.model_dump(exclude={"employees_id"})
     log = Log(**log_data)
     employee.workspace.logs.append(log)
     employee.logs.append(log)
+    employee_stats = employee.statistics
     await change_employee_data_via_log(
-        employee.statistics,
-        log.type.name,
-        log.data,
+        employee_stats,
+        log,
         "create",
+        session
     )
     return log
 
@@ -153,8 +161,7 @@ async def delete_employee_log(
     employee.logs.remove(log)
     await change_employee_data_via_log(
         employee.statistics,
-        log.type.name,
-        log.data,
+        log,
         "delete"
     )
     if not log.employees:

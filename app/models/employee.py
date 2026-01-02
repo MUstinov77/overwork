@@ -44,19 +44,3 @@ class Employee(Base):
         back_populates="employee",
         cascade="all, delete",
     )
-
-
-@event.listens_for(Employee.logs, "append")
-def count_overwork(target: Employee, value: Log, initiator):
-    match value.type:
-        case LogType.work_day:
-            time_worked = value.data
-            for log in target.logs[::-1]:
-                if log.type == LogType.work_day and log.log_date.month == value.log_date.month:
-                    time_worked += log.data
-                    if time_worked > 164:
-                        target.overwork_time = time_worked - 164
-                else:
-                    break
-        case _:
-            pass
