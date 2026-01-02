@@ -8,8 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.utils.db_queries import (
     get_employee_by_id,
     get_log_by_id,
-    get_workspace,
-    get_logs_per_month
+    get_workspace
     )
 from app.core.utils.logs import change_employee_data_via_log
 from app.db.db import session_provider
