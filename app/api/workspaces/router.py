@@ -1,17 +1,14 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import update
-from sqlalchemy.orm import Session
 
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
+from app.core.exceptions import NotFoundException
 from app.core.utils.auth import get_current_user
-from app.core.utils.db_queries import get_workspace
-from app.core.datastore.db import session_provider
 from app.models.user import User
-from app.models.workspace import Workspace
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
+from app.service.workspace import WorkspaceService, get_workspace_service
 
 router = APIRouter(
     dependencies=(
@@ -34,18 +31,23 @@ router.include_router(
 )
 async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
+        workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
-    return user.workspaces
-
+    workspaces = await workspace_service.retrieve_by_user(user)
+    if not workspaces:
+        raise NotFoundException
+    return workspaces
 
 @router.get(
     "/{workspace_id}",
     response_model=WorkspaceRetrieve,
 )
 async def get_workspace_by_id(
-        workspace: Annotated[Workspace, Depends(get_workspace)],
+        workspace_id: int,
+        workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
 ):
-    return workspace
+    record = await workspace_service.retrieve(workspace_id)
+    return record
 
 
 @router.post(
@@ -55,13 +57,14 @@ async def get_workspace_by_id(
 )
 async def create_workspace(
     data: WorkspaceCreateUpdate,
+    workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
     user: Annotated[User, Depends(get_current_user)],
-    session: Session = Depends(session_provider),
 ):
-    workspace = Workspace(**data.model_dump())
-    workspace.user_id = user.id
-    session.add(workspace)
-    session.commit()
+    create_data = data.model_dump()
+    create_data["user_id"] = user.id
+    workspace = await workspace_service.create(
+        create_data
+    )
     return workspace
 
 
@@ -70,12 +73,12 @@ async def create_workspace(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_workspace_by_id(
-        workspace: Annotated[Workspace, Depends(get_workspace)],
-        session: Session = Depends(session_provider)
+        workspace_id: int,
+        workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
+
 ):
-    session.delete(workspace)
-    session.commit()
-    return workspace
+    await workspace_service.delete(workspace_id)
+    return {"detail": "Workspace deleted"}
 
 
 @router.patch(
@@ -84,11 +87,12 @@ async def delete_workspace_by_id(
 )
 async def update_workspace(
         data: WorkspaceCreateUpdate,
-        workspace: Annotated[Workspace, Depends(get_workspace)],
-        session: Annotated[Session, Depends(session_provider)]
+        workspace_id: int,
+        workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
-    session.execute(
-        update(Workspace).where(Workspace.id == workspace.id).values(**data.model_dump())
+    updated_data = data.model_dump(
+        exclude_none=True,
+        exclude_unset=True,
     )
-    session.commit()
+    workspace = await workspace_service.update(updated_data, workspace_id)
     return workspace
