@@ -47,6 +47,8 @@ async def get_workspace_by_id(
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
 ):
     record = await workspace_service.retrieve(workspace_id)
+    if not record:
+        raise NotFoundException
     return record
 
 
