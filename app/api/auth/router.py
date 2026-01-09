@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from app.core.datastore.db import session_provider
 from app.core.utils.auth import (
     ACCESS_TOKEN_EXPIRES_DAYS,
     authenticate_user,
     create_access_token
     )
 from app.core.utils.encrypt import get_hashed_password
-from app.core.datastore.db import session_provider
 from app.models.user import User
 from app.schemas.auth import Token, UserSignupLoginSchema
 

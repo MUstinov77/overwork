@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.params import Depends
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
 from app.models.base import Base
@@ -26,6 +26,8 @@ def session_provider(session: Session = Depends(create_session)):
 
 def init_db():
     Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        session.execute(text("PRAGMA foreign_keys = ON"))
 
 def destroy_db():
     Base.metadata.drop_all(engine)

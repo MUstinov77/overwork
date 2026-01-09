@@ -79,7 +79,7 @@ async def delete_workspace_by_id(
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 
 ):
-    await workspace_service.delete(workspace_id)
+    await workspace_service.delete_workspace(workspace_id)
     return {"detail": "Workspace deleted"}
 
 

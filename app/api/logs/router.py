@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.core.datastore.db import session_provider
 from app.core.utils.auth import get_current_user
 from app.core.utils.db_queries import (
     get_employee_by_id,
@@ -11,7 +12,6 @@ from app.core.utils.db_queries import (
     get_workspace
     )
 from app.core.utils.logs import change_employee_data_via_log
-from app.core.datastore.db import session_provider
 from app.models.log import Log
 from app.models.workspace import Workspace
 from app.schemas.log import LogCreateUpdate, LogRetrieve

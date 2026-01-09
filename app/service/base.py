@@ -28,7 +28,6 @@ class BaseService:
     async def delete(self, obj_id: int):
         query = delete(self.model).where(self.model.id == obj_id).returning(self.model)
         result = self.session.execute(query)
-        self.session.commit()
         return result.scalars().one()
 
     async def retrieve(self, obj_id: int):

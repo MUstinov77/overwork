@@ -1,28 +1,19 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from fastapi.exceptions import HTTPException
-from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.core.utils.db_queries import (
-    get_employee_by_id,
-    get_log_by_id,
-    get_workspace
-    )
-from app.core.utils.logs import change_employee_data_via_log
 from app.core.datastore.db import session_provider
+from app.core.exceptions import NotFoundException
+from app.core.utils.db_queries import get_log_by_id
+from app.core.utils.logs import change_employee_data_via_log
 from app.models.employee import Employee
 from app.models.log import Log
-from app.models.statistics import Statistics
-from app.models.workspace import Workspace
-from app.schemas.employee import EmployeeCreateUpdate, EmployeeRetrieve
+from app.schemas.employee import EmployeeCreateRetrieve, EmployeeUpdate
 from app.schemas.log import LogCreateUpdate, LogRetrieve
+from app.service.employee import EmployeeService, get_employee_service
 
 router = APIRouter(
-    dependencies=(
-        Depends(get_workspace),
-    ),
     prefix="/{workspace_id}/employees",
     tags=["employees"],
 )
@@ -30,43 +21,48 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[EmployeeRetrieve],
+    response_model=list[EmployeeCreateRetrieve],
 )
 async def get_workspace_employees(
-        workspace: Annotated[Workspace, Depends(get_workspace)]
+        workspace_id: int,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
-    return workspace.employees
+    employees = await employee_service.retrieve_by_workspace(workspace_id)
+    if not employees:
+        raise NotFoundException
+    return employees
 
 
 @router.get(
     "/{employee_id}",
-    response_model=EmployeeRetrieve,
+    response_model=EmployeeCreateRetrieve,
 )
 async def get_employee_by_id(
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
+        workspace_id : int,
+        employee_id: int,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
 ):
+    employee = await employee_service.retrieve(employee_id)
     if not employee:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise NotFoundException
     return employee
 
 
 @router.post(
     "/",
-    response_model=EmployeeRetrieve,
-    response_model_exclude={"statistics"},
+    response_model=EmployeeCreateRetrieve,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_employee(
-        data: EmployeeCreateUpdate,
-        workspace: Annotated[Workspace, Depends(get_workspace)]
+        workspace_id: int,
+        data: EmployeeCreateRetrieve,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
     employee_data = data.model_dump(
         exclude_none=True
     )
-    employee = Employee(**employee_data)
-    employee.workspace_id = workspace.id
-    employee.statistics = Statistics()
-    workspace.employees.append(employee)
+    employee_data["workspace_id"] = workspace_id
+    employee = await employee_service.create(employee_data)
     return employee
 
 
@@ -75,31 +71,30 @@ async def create_employee(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_employee(
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
-        session: Annotated[Session, Depends(session_provider)]
+        workspace_id: int,
+        employee_id: int,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
-    session.delete(employee)
-    return employee
+    await employee_service.delete_employee(employee_id)
+    return {"message": "Employee deleted"}
 
 
 @router.patch(
     "/{employee_id}",
-    response_model=EmployeeRetrieve
+    response_model=EmployeeCreateRetrieve
 )
 async def update_employee(
-        data: EmployeeCreateUpdate,
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
-        session: Annotated[Session, Depends(session_provider)],
+        workspace_id: int,
+        employee_id: int,
+        data: EmployeeUpdate,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
 
     updated_data = data.model_dump(
         exclude_unset=True,
         exclude_none=True
     )
-
-    session.execute(
-        update(Employee).where(Employee.id == employee.id).values(**updated_data)
-    )
+    employee = await employee_service.update(updated_data, employee_id)
     return employee
 
 

@@ -3,7 +3,7 @@ from datetime import date as py_date
 from pydantic import BaseModel
 
 from app.core.enum import LogType
-from app.schemas.employee import EmployeeRetrieve
+from app.schemas.employee import EmployeeCreateRetrieve
 
 
 class LogBase(BaseModel):
@@ -18,4 +18,4 @@ class LogCreateUpdate(LogBase):
 
 class LogRetrieve(LogBase):
 
-    employees: list[EmployeeRetrieve]
+    employees: list[EmployeeCreateRetrieve]

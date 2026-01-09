@@ -1,16 +1,16 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import select, extract, and_
+from sqlalchemy import and_, extract, select
 from sqlalchemy.orm import Session
 
+from app.core.datastore.db import session_provider
 from app.core.enum import LogType
 from app.core.exceptions import NotFoundException
-from app.core.datastore.db import session_provider
-from app.models.log import Log
 from app.models.employee import Employee
-from app.models.workspace import Workspace
 from app.models.employee_logs import employees_logs_table
+from app.models.log import Log
+from app.models.workspace import Workspace
 
 
 def get_workspace(

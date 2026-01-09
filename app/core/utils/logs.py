@@ -1,7 +1,8 @@
-from app.core.utils.db_queries import get_logs_per_month
-from app.models.statistics import Statistics
-from app.models.log import Log
 from sqlalchemy.orm import Session
+
+from app.core.utils.db_queries import get_logs_per_month
+from app.models.log import Log
+from app.models.statistics import Statistics
 
 
 async def change_employee_data_via_log(
