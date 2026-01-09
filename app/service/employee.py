@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.datastore.db import session_provider
+from app.schemas.statistics import StatisticsSchema
 from app.models.employee import Employee
 from app.models.statistics import Statistics
 from app.service.base import BaseService
@@ -20,29 +21,18 @@ def get_employee_service(
 
 class EmployeeService(BaseService):
 
-    async def create(self, values: dict):
-        employee_stats_data = values.pop("statistics")
-        employee = self.model(**values)
-        stats = Statistics(**employee_stats_data)
-        employee.statistics = stats
-        self.session.add(employee)
-        self.session.commit()
-        return employee
-
-    async def delete_employee(self, employee_id: int):
+    async def create_instance(self, values: dict):
+        employee_stats_data = values.pop("statistics", StatisticsSchema().model_dump())
+        employee = await super().create_instance(values)
+        employee_stats_data["employee_id"] = employee.id
         try:
-            employee = await self.delete(employee_id)
+            stats = Statistics(**employee_stats_data)
+            self.session.add(stats)
             self.session.commit()
             return employee
         except SQLAlchemyError:
             self.session.rollback()
             raise HTTPException(
                 status_code=400,
-                detail="Error while deleting workspace",
+                detail="Error while creating employee",
             )
-
-
-    async def retrieve_by_workspace(self, workspace_id: int):
-        query = select(self.model).where(self.model.workspace_id == workspace_id)
-        result = self.session.execute(query)
-        return result.scalars().all()

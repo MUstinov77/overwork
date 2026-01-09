@@ -27,7 +27,10 @@ async def get_workspace_employees(
         workspace_id: int,
         employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
-    employees = await employee_service.retrieve_by_workspace(workspace_id)
+    employees = await employee_service.retrieve_all(
+        employee_service.model.workspace_id,
+        workspace_id
+    )
     if not employees:
         raise NotFoundException
     return employees
@@ -42,7 +45,10 @@ async def get_employee_by_id(
         employee_id: int,
         employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
 ):
-    employee = await employee_service.retrieve(employee_id)
+    employee = await employee_service.retrieve_one(
+        employee_service.model.id,
+        employee_id
+    )
     if not employee:
         raise NotFoundException
     return employee
@@ -62,7 +68,7 @@ async def create_employee(
         exclude_none=True
     )
     employee_data["workspace_id"] = workspace_id
-    employee = await employee_service.create(employee_data)
+    employee = await employee_service.create_instance(employee_data)
     return employee
 
 
@@ -75,7 +81,7 @@ async def delete_employee(
         employee_id: int,
         employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
-    await employee_service.delete_employee(employee_id)
+    await employee_service.delete_instance(employee_id)
     return {"message": "Employee deleted"}
 
 
@@ -94,7 +100,7 @@ async def update_employee(
         exclude_unset=True,
         exclude_none=True
     )
-    employee = await employee_service.update(updated_data, employee_id)
+    employee = await employee_service.update_instance(updated_data, employee_id)
     return employee
 
 
