@@ -5,9 +5,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
-    UniqueConstraint,
-    event,
-    select
+    UniqueConstraint
     )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
