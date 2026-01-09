@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import HTTPException
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import SQLAlchemyError
@@ -31,10 +33,15 @@ class BaseService:
         result = self.session.execute(query)
         return result.scalars().one()
 
-    async def retrieve(self, obj_id: int):
-        query = select(self.model).where(self.model.id == obj_id)
+    async def retrieve_one(self, field: Any, field_value: Any):
+        query = select(self.model).where(field == field_value)
         result = self.session.execute(query)
-        return result.scalars().one()
+        return result.scalars().first()
+
+    async def retrieve_all(self, field: Any, field_value: Any):
+        query = select(self.model).where(field == field_value)
+        result = self.session.execute(query)
+        return result.scalars().all()
 
     async def create_instance(self, values: dict):
         try:

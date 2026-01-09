@@ -8,6 +8,7 @@ from app.core.exceptions import NotFoundException
 from app.core.utils.auth import get_current_user
 from app.models.user import User
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
+from app.service.base import BaseService
 from app.service.workspace import WorkspaceService, get_workspace_service
 
 router = APIRouter(
@@ -33,7 +34,10 @@ async def get_my_workspaces(
         user: Annotated[User, Depends(get_current_user)],
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
-    workspaces = await workspace_service.retrieve_by_user(user)
+    workspaces = await workspace_service.retrieve_all(
+        workspace_service.model.user_id,
+        user.id
+    )
     if not workspaces:
         raise NotFoundException
     return workspaces
@@ -46,7 +50,10 @@ async def get_workspace_by_id(
         workspace_id: int,
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
 ):
-    record = await workspace_service.retrieve(workspace_id)
+    record = await workspace_service.retrieve_one(
+        workspace_service.model.id,
+        workspace_id
+    )
     if not record:
         raise NotFoundException
     return record
@@ -77,9 +84,9 @@ async def delete_workspace_by_id(
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
     workspace = await workspace_service.delete_instance(workspace_id)
-    if workspace:
-        return workspace
-    return NotFoundException
+    if not workspace:
+        raise NotFoundException
+    return workspace
 
 
 @router.patch(
