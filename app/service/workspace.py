@@ -18,18 +18,6 @@ def get_workspace_service(
 
 class WorkspaceService(BaseService):
 
-    async def delete_workspace(self, workspace_id: int):
-        try:
-            workspace = await self.delete(workspace_id)
-            self.session.commit()
-            return workspace
-        except SQLAlchemyError:
-            self.session.rollback()
-            raise HTTPException(
-                status_code=400,
-                detail="Error while deleting workspace",
-            )
-
     async def retrieve_by_user(self, user: User):
         query = select(self.model).where(self.model.user == user)
         result = self.session.execute(query)

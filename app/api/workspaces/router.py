@@ -59,14 +59,12 @@ async def get_workspace_by_id(
 )
 async def create_workspace(
     data: WorkspaceCreateUpdate,
-    workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
     user: Annotated[User, Depends(get_current_user)],
+    workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
 ):
     create_data = data.model_dump()
     create_data["user_id"] = user.id
-    workspace = await workspace_service.create(
-        create_data
-    )
+    workspace = await workspace_service.create_instance(create_data)
     return workspace
 
 
@@ -77,10 +75,11 @@ async def create_workspace(
 async def delete_workspace_by_id(
         workspace_id: int,
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
-
 ):
-    await workspace_service.delete_workspace(workspace_id)
-    return {"detail": "Workspace deleted"}
+    workspace = await workspace_service.delete_instance(workspace_id)
+    if workspace:
+        return workspace
+    return NotFoundException
 
 
 @router.patch(
@@ -96,5 +95,5 @@ async def update_workspace(
         exclude_none=True,
         exclude_unset=True,
     )
-    workspace = await workspace_service.update(updated_data, workspace_id)
+    workspace = await workspace_service.update_instance(updated_data, workspace_id)
     return workspace
