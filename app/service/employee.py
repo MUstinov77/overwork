@@ -2,7 +2,6 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
-from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -21,7 +20,7 @@ def get_employee_service(
 
 class EmployeeService(BaseService):
 
-    async def create_instance(self, values: dict):
+    async def create_instance(self, values: dict, *args):
         employee_stats_data = values.pop("statistics", StatisticsSchema().model_dump())
         employee = await super().create_instance(values)
         employee_stats_data["employee_id"] = employee.id

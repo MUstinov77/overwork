@@ -5,38 +5,33 @@ from app.models.log import Log
 from app.models.statistics import Statistics
 
 
-async def change_employee_data_via_log(
-        employee_stats: Statistics,
-        log: Log,
-        action: str = "create" or "delete",
-        session: Session | None = None
-):
+def get_calculate_func(log_field_type):
     funcs_by_field = {
-        "sick_day": calculate_sick_days,
-        "vacation": calculate_vacation_surplus,
+        "sick_day":calculate_sick_days,
+        "vacation":calculate_vacation_surplus,
         "day_off": calculate_days_off,
-        "work_day": calculate_overwork_time,
+        "work_day":calculate_overwork_time,
     }
-    calculating_func = funcs_by_field.get(log.type.name, None)
-    if not calculating_func:
+    calculate_func = funcs_by_field.get(log_field_type, None)
+    if not calculate_func:
         raise ValueError("Field not found")
-    try:
-        calculating_func(employee_stats, log, action, session)
-    except ValueError:
-        return
+    return calculate_func
 
 
 def calculate_sick_days(
         employee_stats: Statistics,
         action: str,
-        data: int = 1
+        data: int | None = None
 ):
-    data = data or 1
     match action:
         case "create":
-            employee_stats.sick_days += data
+            employee_stats.sick_days += 1
+            if data:
+                employee_stats.overwork_time += data
         case "delete":
-            employee_stats.sick_days -= data
+            employee_stats.sick_days -= 1
+            if data:
+                employee_stats.overwork_time -= data
         case _:
             raise ValueError("Action not found")
 
@@ -44,12 +39,10 @@ def calculate_sick_days(
 def calculate_vacation_surplus(
         employee_stats: Statistics,
         action: str,
-        data: int = 1
 ):
-    data = data or 1
     match action:
         case "create":
-            employee_stats.vacation_surplus = employee_stats.vacation - data
+            employee_stats.vacation_surplus -= 1
         case "delete":
             employee_stats.vacation += 1
         case _:
@@ -59,14 +52,17 @@ def calculate_vacation_surplus(
 def calculate_days_off(
         employee_stats: Statistics,
         action: str,
-        data: int = 1
+        data: int | None = None
 ):
-    data = data or 1
     match action:
         case "create":
-            employee_stats.days_off += data
+            employee_stats.days_off += 1
+            if data:
+                employee_stats.overwork_time += data
         case "delete":
-            employee_stats.days_off -= data
+            employee_stats.days_off -= 1
+            if data:
+                employee_stats.overwork_time -= data
         case _:
             raise ValueError("Action not found")
 
@@ -84,7 +80,6 @@ def calculate_overwork_time(
                 employee_stats.employee,
                 session
             )
-
             if (
                 employee_stats.overwork_updated_date is not None
                 and

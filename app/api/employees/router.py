@@ -6,12 +6,13 @@ from sqlalchemy.orm import Session
 from app.core.datastore.db import session_provider
 from app.core.exceptions import NotFoundException
 from app.core.utils.db_queries import get_log_by_id
-from app.core.utils.logs import change_employee_data_via_log
+from app.core.utils.logs import get_calculate_func
 from app.models.employee import Employee
 from app.models.log import Log
 from app.schemas.employee import EmployeeCreateRetrieve, EmployeeUpdate
 from app.schemas.log import LogCreateUpdate, LogRetrieve
 from app.service.employee import EmployeeService, get_employee_service
+from app.service.log import LogService, get_log_service
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -106,12 +107,41 @@ async def update_employee(
 
 @router.get(
     "/{employee_id}/logs",
-    response_model=list[LogRetrieve]
+    response_model=list[LogRetrieve],
 )
 async def get_employee_logs(
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
+        workspace_id: int,
+        employee_id: int,
+        log_service: Annotated[LogService, Depends(get_log_service)]
 ):
-    return employee.logs
+    logs = await log_service.retrieve_all(Employee.id, employee_id)
+    if not logs:
+        raise NotFoundException
+    return logs
+
+
+# @router.post(
+#     "/{employee_id}/logs",
+#     response_model=LogRetrieve,
+#     status_code=status.HTTP_201_CREATED
+# )
+# async def create_log_via_employee(
+#         data: LogCreateUpdate,
+#         employee: Annotated[Employee, Depends(get_employee_by_id)],
+#         session: Annotated[Session, Depends(session_provider)],
+# ):
+#     log_data = data.model_dump(exclude={"employees_id"})
+#     log = Log(**log_data)
+#     employee.workspace.logs.append(log)
+#     employee.logs.append(log)
+#     employee_stats = employee.statistics
+#     await change_employee_data_via_log(
+#         employee_stats,
+#         log,
+#         "create",
+#         session
+#     )
+#     return log
 
 
 @router.post(
@@ -121,30 +151,35 @@ async def get_employee_logs(
 )
 async def create_log_via_employee(
         data: LogCreateUpdate,
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
-        session: Annotated[Session, Depends(session_provider)],
+        workspace_id: int,
+        employee_id: int,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
+        log_service: Annotated[LogService, Depends(get_log_service)]
 ):
-    log_data = data.model_dump(exclude={"employees_id"})
-    log = Log(**log_data)
-    employee.workspace.logs.append(log)
-    employee.logs.append(log)
-    employee_stats = employee.statistics
-    await change_employee_data_via_log(
-        employee_stats,
-        log,
-        "create",
-        session
+    log_create_data = data.model_dump()
+    log_create_data.pop("employees_id")
+    log_create_data["workspace_id"] = workspace_id
+    employee = await employee_service.retrieve_one(
+        Employee.id,
+        employee_id
     )
+    log = await log_service.create_instance(log_create_data, employee)
     return log
 
 
 @router.get(
     "/{employee_id}/logs/{log_id}",
-    response_model=LogRetrieve,
+    response_model=LogRetrieve
 )
 async def get_log_by_employee_id(
-        log: Annotated[Log, Depends(get_log_by_id)],
+        workspace_id: int,
+        employee_id: int,
+        log_id: int,
+        log_service: Annotated[LogService, Depends(get_log_service)],
 ):
+    log = await log_service.retrieve_one(Log.id, log_id)
+    if not log:
+        return NotFoundException
     return log
 
 
@@ -153,16 +188,14 @@ async def get_log_by_employee_id(
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_employee_log(
-        employee: Annotated[Employee, Depends(get_employee_by_id)],
-        log: Annotated[Log, Depends(get_log_by_id)],
-        session: Annotated[Session, Depends(session_provider)]
+        workspace_id: int,
+        employee_id: int,
+        log_id: int,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
+        log_service: Annotated[LogService, Depends(get_log_service)],
 ):
-    employee.logs.remove(log)
-    await change_employee_data_via_log(
-        employee.statistics,
-        log,
-        "delete"
-    )
-    if not log.employees:
-        session.delete(log)
+    employee = await employee_service.retrieve_one(Employee.id, employee_id)
+    log = await log_service.delete_instance(log_id, employee)
+    if not employee or not log:
+        raise NotFoundException
     return log
