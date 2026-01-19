@@ -12,8 +12,10 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     await init_db()
 
-    try: yield
-    finally: await destroy_db()
+    try:
+        yield
+    finally:
+        await destroy_db()
 
 def create_app():
 
@@ -24,6 +26,6 @@ def create_app():
 
     app.include_router(auth_router)
     app.include_router(workspace_router)
-    
+
     return app
 
