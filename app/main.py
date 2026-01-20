@@ -1,17 +1,9 @@
-from fastapi import FastAPI
+import uvicorn
 
-from app.api.auth.router import router as auth_router
-from app.api.workspaces.router import router as workspaces_router
-from app.core.datastore.db import lifespan
-
-app = FastAPI(
-    lifespan=lifespan
-)
-
-app.include_router(auth_router)
-app.include_router(workspaces_router)
+from app.app_factory import create_app
 
 
-@app.get("/")
-async def main():
-    return {"message": "Hello World"}
+app = create_app()
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
