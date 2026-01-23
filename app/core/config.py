@@ -4,6 +4,10 @@ from pathlib import Path
 
 class Settings(BaseSettings):
 
+    AUTH_SECRET_KEY: str
+    JWT_ALGORITHM: str
+    JWT_ISSUER: str
+    TOKEN_EXPIRE: int
     TITLE: str = "OverworkApi"
     DB_USER: str
     DB_PASSWORD: str

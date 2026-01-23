@@ -2,7 +2,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError, DecodeError, ExpiredSignatureError
 from datetime import datetime, timezone, timedelta
 
-from app.core.config import get_settings, Settings
+from app.core.config import get_settings
 
 
 settings = get_settings()
