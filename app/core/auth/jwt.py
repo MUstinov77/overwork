@@ -5,13 +5,14 @@ from datetime import datetime, timezone, timedelta
 from app.core.config import get_settings, Settings
 
 
-setting = get_settings()
+settings = get_settings()
 
 
 
 class JWTService:
 
-    def __init__(self, settings: Settings):
+    def __init__(self):
+        self.settings = get_settings()
         self.auth_secret_key = settings.AUTH_SECRET_KEY
         self.algorithm = settings.JWT_ALGORITHM
         self.token_expire = settings.TOKEN_EXPIRE
