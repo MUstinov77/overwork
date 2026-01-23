@@ -3,17 +3,18 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
-from app.core.datastore.db import session_provider
 from app.core.utils.auth import (
     ACCESS_TOKEN_EXPIRES_DAYS,
-    authenticate_user,
     create_access_token
     )
+from app.core.auth.jwt import JWTService
 from app.core.utils.encrypt import get_hashed_password
 from app.models.user import User
+from app.service.user import get_user_service
 from app.schemas.auth import Token, UserSignupLoginSchema
+from app.service.user import UserService
+from app.core.config import get_settings
 
 BASE_PREFIX = "/auth"
 
@@ -25,29 +26,29 @@ router = APIRouter(
 
 @router.post(
     "/signup",
+    response_model=UserSignupLoginSchema
 )
 async def signup(
-        user_data: UserSignupLoginSchema,
-        session: Session = Depends(session_provider)
+        data: UserSignupLoginSchema,
+        user_service: Annotated[UserService, Depends(get_user_service)]
 ):
-    data = user_data.model_dump()
-    hashed_password = await get_hashed_password(data.pop("password"))
-    user = User(**data)
-    user.password = hashed_password
-    session.add(user)
-    return {"message": "User created"}
+    user_data = data.model_dump()
+    hashed_password = await get_hashed_password(user_data.pop("password"))
+    user_data["hashed_password"] = hashed_password
+    user = await user_service.create_instance(user_data)
+    return user
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    response_model=Token
+)
 async def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        session: Session = Depends(session_provider)
+        user_service: Annotated[UserService, get_user_service],
 ):
-    user = await authenticate_user(form_data.username, form_data.password, session)
+    user = await user_service.retrieve_one(User.username, form_data.username)
     if not user:
         return {"message": "Incorrect username or password"}
-    token_timedelta = timedelta(days=ACCESS_TOKEN_EXPIRES_DAYS)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=token_timedelta
-    )
-    return Token(access_token=access_token, token_type="bearer")
+    token = JWTService().create_and_encode_token(user)
+    return {"token": token}
