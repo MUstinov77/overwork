@@ -3,11 +3,12 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 
 from app.core.datastore.db import get_postgres_session
 from app.models.employee import Employee
 from app.models.log import Log
+from app.models.employee_logs import employees_logs_table
+from sqlalchemy import select
 from app.service.base import BaseService
 from app.core.utils.logs import get_calculate_func
 
@@ -52,3 +53,22 @@ class LogService(BaseService):
                 status_code=400,
                 detail="Error while changing employee stats",
             )
+
+    async def get_logs_per_month(
+            self,
+            employee: Employee,
+    ):
+        # result = self.session.execute(
+        #     select(Log).
+        #     where(Log.type == LogType.work_day).
+        #     join(employees_logs_table).
+        #     filter(
+        #         and_(
+        #             employees_logs_table.c.employee_id == employee.id,
+        #             extract("year", Log.date) == log.date.year,
+        #             extract("month", Log.date) == log.date.month
+        #         )
+        #     ).
+        #     order_by(Log.date)
+        # ).scalars().all()
+        pass

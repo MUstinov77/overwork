@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundException
-from app.core.utils.db_queries import get_log_by_id
 from app.core.utils.logs import get_calculate_func
 from app.models.employee import Employee
 from app.models.log import Log

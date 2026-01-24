@@ -25,7 +25,7 @@ def create_app():
     )
 
     app.include_router(auth_router)
-    app.include_router(workspace_router)
+    #app.include_router(workspace_router)
 
     return app
 

@@ -5,15 +5,11 @@ from fastapi import APIRouter, Depends, status
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
 from app.core.exceptions import NotFoundException
-from app.core.utils.auth import get_current_user
 from app.models.user import User
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 from app.service.workspace import WorkspaceService, get_workspace_service
 
 router = APIRouter(
-    dependencies=(
-        Depends(get_current_user),
-    ),
     prefix="/workspaces",
     tags=["workspaces"],
 )
@@ -30,9 +26,9 @@ router.include_router(
     response_model=list[WorkspaceRetrieve],
 )
 async def get_my_workspaces(
-        user: Annotated[User, Depends(get_current_user)],
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
+    user = None
     workspaces = await workspace_service.retrieve_all(
         workspace_service.model.user_id,
         user.id
@@ -65,9 +61,9 @@ async def get_workspace_by_id(
 )
 async def create_workspace(
     data: WorkspaceCreateUpdate,
-    user: Annotated[User, Depends(get_current_user)],
     workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
 ):
+    user = None
     create_data = data.model_dump()
     create_data["user_id"] = user.id
     workspace = await workspace_service.create_instance(create_data)
