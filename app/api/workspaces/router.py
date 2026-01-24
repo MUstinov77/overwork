@@ -8,7 +8,6 @@ from app.core.exceptions import NotFoundException
 from app.core.utils.auth import get_current_user
 from app.models.user import User
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
-from app.service.base import BaseService
 from app.service.workspace import WorkspaceService, get_workspace_service
 
 router = APIRouter(
