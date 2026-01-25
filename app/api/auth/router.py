@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.auth.jwt import JWTService
@@ -19,7 +19,7 @@ router = APIRouter(
 
 @router.post(
     "/signup",
-    response_model=UserSignupLoginSchema
+    status_code=status.HTTP_201_CREATED
 )
 async def signup(
         data: UserSignupLoginSchema,
@@ -28,13 +28,13 @@ async def signup(
     user_data = data.model_dump()
     hashed_password = await get_hashed_password(user_data.pop("password"))
     user_data["hashed_password"] = hashed_password
-    user = await user_service.create_instance(user_data)
-    return user
+    _user = await user_service.create_instance(user_data)
+    return {"message": "User created"}
 
 
 @router.post(
     "/login",
-    response_model=Token
+    response_model=Token | None
 )
 async def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

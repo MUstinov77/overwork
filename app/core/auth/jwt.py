@@ -8,7 +8,6 @@ from app.core.config import get_settings
 settings = get_settings()
 
 
-
 class JWTService:
 
     def __init__(self):

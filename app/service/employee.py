@@ -28,10 +28,10 @@ class EmployeeService(BaseService):
         try:
             stats = Statistics(**employee_stats_data)
             self.session.add(stats)
-            self.session.commit()
+            await self.session.commit()
             return employee
         except SQLAlchemyError:
-            self.session.rollback()
+            await self.session.rollback()
             raise HTTPException(
                 status_code=400,
                 detail="Error while creating employee",
