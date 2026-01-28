@@ -2,15 +2,15 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.datastore.db import get_postgres_session
-from app.models.employee import Employee
-from app.models.log import Log
-from app.models.employee_logs import employees_logs_table
-from sqlalchemy import select
-from app.service.base import BaseService
 from app.core.utils.logs import get_calculate_func
+from app.models.employee import Employee
+from app.models.employee_logs import employees_logs_table
+from app.models.log import Log
+from app.service.base import BaseService
 
 
 def get_log_service(

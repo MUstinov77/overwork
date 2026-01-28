@@ -1,9 +1,14 @@
 from typing import Annotated
 
 from fastapi.params import Depends
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine, AsyncSession
-from app.core.config import get_settings
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine
+    )
 
+from app.core.config import get_settings
 
 settings = get_settings()
 

@@ -1,9 +1,13 @@
+from datetime import datetime, timedelta, timezone
+
 import jwt
-from jwt.exceptions import InvalidTokenError, DecodeError, ExpiredSignatureError
-from datetime import datetime, timezone, timedelta
+from jwt.exceptions import (
+    DecodeError,
+    ExpiredSignatureError,
+    InvalidTokenError
+    )
 
 from app.core.config import get_settings
-
 
 settings = get_settings()
 

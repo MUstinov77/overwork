@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
+
 
 class UserSignupLoginSchema(BaseModel):
 

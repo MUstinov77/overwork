@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-
 from app.schemas.log import LogCreateUpdate, LogRetrieve
 
 router = APIRouter(
