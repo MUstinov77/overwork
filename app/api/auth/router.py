@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 from app.core.auth.jwt import JWTService
 from app.core.utils.encrypt import get_hashed_password
@@ -37,11 +37,11 @@ async def signup(
     response_model=Token | None
 )
 async def login(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        user_data: UserSignupLoginSchema,
         user_service: Annotated[UserService, Depends(get_user_service)],
 ):
-    user = await user_service.retrieve_one(User.username, form_data.username)
-    if not user:
+    user_in_db = await user_service.retrieve_one(User.username, user_data.username)
+    if not user_in_db:
         return {"message": "Incorrect username or password"}
-    token = JWTService().create_and_encode_token(user)
+    token = JWTService().create_and_encode_token(user_credentials)
     return {"token": token}
