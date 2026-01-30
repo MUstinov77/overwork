@@ -8,8 +8,12 @@ from app.core.exceptions import NotFoundException
 from app.models.user import User
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 from app.service.workspace import WorkspaceService, get_workspace_service
+from app.core.auth.request_validators import authenticate_user
 
 router = APIRouter(
+    dependencies=(
+        Depends(authenticate_user),
+    ),
     prefix="/workspaces",
     tags=["workspaces"],
 )
@@ -28,10 +32,9 @@ router.include_router(
 async def get_my_workspaces(
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
-    user = None
     workspaces = await workspace_service.retrieve_all(
         workspace_service.model.user_id,
-        user.id
+        7
     )
     if not workspaces:
         raise NotFoundException

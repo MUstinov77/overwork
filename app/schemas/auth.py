@@ -9,7 +9,7 @@ class UserSignupLoginSchema(BaseModel):
 
 
 class Token(BaseModel):
-    token: str
+    access_token: str
 
 
 class TokenData(BaseModel):
