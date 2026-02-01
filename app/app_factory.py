@@ -19,7 +19,6 @@ async def lifespan(app: FastAPI):
         await destroy_db()
 
 def create_app():
-
     app = FastAPI(
         title=settings.TITLE,
         lifespan=lifespan,
