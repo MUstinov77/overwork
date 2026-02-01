@@ -1,12 +1,15 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
 from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
 from app.models.user import User
+from app.core.datastore.db import get_postgres_session
+from app.models.workspace import Workspace
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 from app.service.workspace import WorkspaceService, get_workspace_service
 
@@ -30,11 +33,12 @@ router.include_router(
     response_model=list[WorkspaceRetrieve],
 )
 async def get_my_workspaces(
+        user: Annotated[User, Depends(authenticate_user)],
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
     workspaces = await workspace_service.retrieve_all(
         workspace_service.model.user_id,
-        7
+        user.id
     )
     if not workspaces:
         raise NotFoundException
@@ -64,9 +68,9 @@ async def get_workspace_by_id(
 )
 async def create_workspace(
     data: WorkspaceCreateUpdate,
+    user: Annotated[User, Depends(authenticate_user)],
     workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
 ):
-    user = None
     create_data = data.model_dump()
     create_data["user_id"] = user.id
     workspace = await workspace_service.create_instance(create_data)
