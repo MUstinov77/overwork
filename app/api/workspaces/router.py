@@ -1,15 +1,12 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.employees.router import router as employees_router
 from app.api.logs.router import router as logs_router
 from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
 from app.models.user import User
-from app.core.datastore.db import get_postgres_session
-from app.models.workspace import Workspace
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
 from app.service.workspace import WorkspaceService, get_workspace_service
 
