@@ -2,8 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.auth.router import router as auth_router
-from app.api.workspaces.router import router as workspace_router
+from app.api import api_router
 from app.core.config import get_settings
 from app.core.datastore.db import destroy_db, init_db
 
@@ -24,8 +23,7 @@ def create_app():
         lifespan=lifespan,
     )
 
-    app.include_router(auth_router)
-    app.include_router(workspace_router)
+    app.include_router(api_router)
 
     return app
 
