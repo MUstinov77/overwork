@@ -4,10 +4,8 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.auth.jwt import JWTService
-from app.service.user import UserService, get_user_service
 from app.models.user import User
-
-
+from app.service.user import UserService, get_user_service
 
 auth_schema = OAuth2PasswordBearer(tokenUrl="auth/login")
 
