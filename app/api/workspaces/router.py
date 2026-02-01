@@ -96,8 +96,8 @@ async def delete_workspace_by_id(
     response_model=WorkspaceRetrieve
 )
 async def update_workspace(
-        data: WorkspaceCreateUpdate,
         workspace_id: int,
+        data: WorkspaceCreateUpdate,
         workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)]
 ):
     updated_data = data.model_dump(
