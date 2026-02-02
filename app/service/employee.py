@@ -21,18 +21,4 @@ def get_employee_service(
 
 class EmployeeService(BaseService):
 
-    async def create_instance(self, values: dict, *args):
-        employee_stats_data = values.pop("statistics", StatisticsSchema().model_dump())
-        employee = await super().create_instance(values)
-        employee_stats_data["employee_id"] = employee.id
-        try:
-            stats = Statistics(**employee_stats_data)
-            self.session.add(stats)
-            await self.session.commit()
-            return employee
-        except SQLAlchemyError:
-            await self.session.rollback()
-            raise HTTPException(
-                status_code=400,
-                detail="Error while creating employee",
-            )
+    pass
