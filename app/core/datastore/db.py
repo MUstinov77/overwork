@@ -25,7 +25,8 @@ async def init_db():
     async_engine = create_async_engine(settings.DB_URI)
 
     async_session_maker = async_sessionmaker(
-        async_engine
+        async_engine,
+        expire_on_commit=False,
     )
 
 async def destroy_db():

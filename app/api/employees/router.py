@@ -9,8 +9,10 @@ from app.models.employee import Employee
 from app.models.log import Log
 from app.schemas.employee import EmployeeCreateRetrieve, EmployeeUpdate
 from app.schemas.log import LogCreateUpdate, LogRetrieve
+from app.schemas.statistics import StatisticsSchema
 from app.service.employee import EmployeeService, get_employee_service
 from app.service.log import LogService, get_log_service
+from app.service.statistics import StatisticsService, get_statistics_service
 
 router = APIRouter(
     prefix="/{workspace_id}/employees",
@@ -61,13 +63,18 @@ async def get_employee_by_id(
 async def create_employee(
         workspace_id: int,
         data: EmployeeCreateRetrieve,
-        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
+        statistics_service: Annotated[StatisticsService, Depends(get_statistics_service)],
 ):
     employee_data = data.model_dump(
         exclude_none=True
     )
+    stats_data = employee_data.pop("statistics", StatisticsSchema().model_dump())
     employee_data["workspace_id"] = workspace_id
     employee = await employee_service.create_instance(employee_data)
+    stats_data["employee_id"] = employee.id
+    employee_stats = await statistics_service.create_instance(stats_data)
+    employee.statistics = employee_stats
     return employee
 
 

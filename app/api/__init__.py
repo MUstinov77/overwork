@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Response, status
 
-
 from app.api.auth.router import router as auth_router
 from app.api.workspaces.router import router as workspace_router
 
