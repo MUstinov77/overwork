@@ -47,7 +47,6 @@ class BaseService:
         try:
             record = await self.create(values)
             await self.session.commit()
-            await self.session.refresh(record)
             return record
         except SQLAlchemyError as e:
             await self.session.rollback()
