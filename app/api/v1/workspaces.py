@@ -2,8 +2,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.api.employees.router import router as employees_router
-from app.api.logs.router import router as logs_router
 from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
 from app.models.user import User
@@ -16,12 +14,6 @@ router = APIRouter(
     ),
     prefix="/workspaces",
     tags=["workspaces"],
-)
-
-router.include_router(employees_router)
-router.include_router(
-    logs_router,
-    prefix="/{workspace_id}/logs",
 )
 
 
