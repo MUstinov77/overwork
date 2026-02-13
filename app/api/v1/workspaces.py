@@ -5,7 +5,11 @@ from fastapi import APIRouter, Depends, status
 from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
 from app.models.user import User
+from app.schemas.employee import EmployeeCreateRetrieve
+from app.schemas.statistics import StatisticsSchema
 from app.schemas.workspace import WorkspaceCreateUpdate, WorkspaceRetrieve
+from app.service.employee import EmployeeService, get_employee_service
+from app.service.statistics import StatisticsService, get_statistics_service
 from app.service.workspace import WorkspaceService, get_workspace_service
 
 router = APIRouter(
@@ -95,3 +99,25 @@ async def update_workspace(
     )
     workspace = await workspace_service.update_instance(updated_data, workspace_id)
     return workspace
+
+
+@router.post(
+    "/{workspace_id}/employee",
+    response_model=EmployeeCreateRetrieve,
+)
+async def create_employee(
+        workspace_id: int,
+        employee_create_data: EmployeeCreateRetrieve,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
+        statistics_service: Annotated[StatisticsService, Depends(get_statistics_service)]
+):
+    employee_data = employee_create_data.model_dump(
+        exclude_none=True
+    )
+    stats_data = employee_data.pop("statistics", StatisticsSchema().model_dump())
+    employee_data["workspace_id"] = workspace_id
+    employee = await employee_service.create_instance(employee_data)
+    stats_data["employee_id"] = employee.id
+    employee_stats = await statistics_service.create_instance(stats_data)
+    employee.statistics = employee_stats
+    return employee
