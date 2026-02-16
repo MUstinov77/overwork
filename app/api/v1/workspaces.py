@@ -102,7 +102,7 @@ async def update_workspace(
 
 
 @router.post(
-    "/{workspace_id}/employee",
+    "/{workspace_id}/employees",
     response_model=EmployeeCreateRetrieve,
 )
 async def create_employee(
@@ -119,5 +119,22 @@ async def create_employee(
     employee = await employee_service.create_instance(employee_data)
     stats_data["employee_id"] = employee.id
     employee_stats = await statistics_service.create_instance(stats_data)
-    employee.statistics = employee_stats
+    #employee.statistics = employee_stats
     return employee
+
+
+@router.get(
+    "/{workspace_id}/employees",
+    response_model=list[EmployeeCreateRetrieve],
+)
+async def get_workspace_employees(
+        workspace_id: int,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
+):
+    employees = await employee_service.retrieve_all(
+        employee_service.model.workspace_id,
+        workspace_id
+    )
+    if not employees:
+        raise NotFoundException
+    return employees

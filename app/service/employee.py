@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
@@ -11,6 +11,7 @@ from app.models.employee import Employee
 from app.models.statistics import Statistics
 from app.schemas.statistics import StatisticsSchema
 from app.service.base import BaseService
+from sqlalchemy import select
 
 
 def get_employee_service(
@@ -21,4 +22,12 @@ def get_employee_service(
 
 class EmployeeService(BaseService):
 
-    pass
+    async def retrieve_one(self, field: Any, field_value: Any):
+        query = select(self.model).where(field == field_value).join(Statistics, Statistics.employee_id == self.model.id)
+
+        result = await self.session.execute(query)
+        record = result.scalars().first()
+        print(query)
+        print(record.id)
+        await self.session.refresh(record)
+        return record
