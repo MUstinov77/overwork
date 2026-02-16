@@ -4,7 +4,7 @@ from fastapi import Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.datastore.db import get_postgres_session
 from app.models.employee import Employee
@@ -23,11 +23,13 @@ def get_employee_service(
 class EmployeeService(BaseService):
 
     async def retrieve_one(self, field: Any, field_value: Any):
-        query = select(self.model).where(field == field_value).join(Statistics, Statistics.employee_id == self.model.id)
+        query = (
+            select(self.model).
+            options(selectinload(self.model.statistics)).
+            where(field == field_value)
+        )
 
         result = await self.session.execute(query)
         record = result.scalars().first()
-        print(query)
-        print(record.id)
         await self.session.refresh(record)
         return record

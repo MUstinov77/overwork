@@ -119,7 +119,6 @@ async def create_employee(
     employee = await employee_service.create_instance(employee_data)
     stats_data["employee_id"] = employee.id
     employee_stats = await statistics_service.create_instance(stats_data)
-    #employee.statistics = employee_stats
     return employee
 
 

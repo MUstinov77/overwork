@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
 from app.core.utils.logs import get_calculate_func
 from app.models.employee import Employee
@@ -15,6 +16,9 @@ from app.service.log import LogService, get_log_service
 from app.service.statistics import StatisticsService, get_statistics_service
 
 router = APIRouter(
+    dependencies=(
+        Depends(authenticate_user),
+    ),
     prefix="/employees",
     tags=["employees"],
 )
