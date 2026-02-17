@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.schemas.log import LogCreateUpdate, LogRetrieve
 
 router = APIRouter(
+    prefix="/logs",
     tags=["logs"],
 )
 
