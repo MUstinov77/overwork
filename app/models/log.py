@@ -40,6 +40,3 @@ class Log(Base):
         secondary=employees_logs_table,
         back_populates="logs",
     )
-    __table_args__ = (
-        UniqueConstraint("date", "workspace_id", name="unique_log"),
-    )

@@ -31,5 +31,4 @@ class EmployeeService(BaseService):
 
         result = await self.session.execute(query)
         record = result.scalars().first()
-        await self.session.refresh(record)
         return record

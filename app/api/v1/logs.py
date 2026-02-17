@@ -4,9 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import NotFoundException
+from app.models.employee import Employee
+from app.models.log import Log
 from app.schemas.log import LogCreateUpdate, LogRetrieve
+from app.core.auth.request_validators import authenticate_user
+from app.service.employee import EmployeeService, get_employee_service
+from app.service.log import LogService, get_log_service
 
 router = APIRouter(
+    dependencies=(
+        Depends(authenticate_user,),
+    ),
     prefix="/logs",
     tags=["logs"],
 )
@@ -17,16 +26,24 @@ router = APIRouter(
     response_model=list[LogRetrieve],
     response_model_exclude_none=True,
 )
-async def get_logs():
-    pass
-
+async def get_logs(
+        log_service: Annotated[LogService, Depends(get_log_service)],
+):
+    # logs = log_service.retrieve_all()
+    ...
 
 @router.get(
     "/{log_id}",
     response_model=LogRetrieve,
 )
-async def get_logs_by_id():
-    pass
+async def get_log_by_id(
+        log_id: int,
+        logs_service: Annotated[LogService, Depends(get_log_service)]
+):
+        log = await logs_service.retrieve_one(Log.id, log_id)
+        if not log:
+            raise NotFoundException
+        return log
 
 
 @router.post(
@@ -34,12 +51,21 @@ async def get_logs_by_id():
     response_model=LogRetrieve,
     response_model_exclude_none=True,
     status_code=status.HTTP_201_CREATED,
-    tags=["workspaces_logs"],
 )
 async def create_log(
-    data: LogCreateUpdate,
+        data: LogCreateUpdate,
+        log_service: Annotated[LogService, Depends(get_log_service)],
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)]
 ):
-    pass
+    log_data = data.model_dump()
+    employees_id = log_data.pop("employees_id")
+    log = await log_service.create_instance(log_data)
+    if not log:
+        raise NotFoundException
+    for employee_id in employees_id:
+        employee = await employee_service.retrieve_one(Employee.id, employee_id)
+        employee.logs.append(log)
+    return log
 
 
 @router.delete(

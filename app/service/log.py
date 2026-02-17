@@ -21,26 +21,6 @@ def get_log_service(
 
 class LogService(BaseService):
 
-    async def create_instance(self, values: dict, employee: Employee | None = None):
-        log = await super().create_instance(values)
-        if not employee:
-            await self.session.rollback()
-            raise HTTPException(
-                status_code=400,
-                detail="Employee is not found. Please provide valid employee id",
-            )
-        employee.logs.append(log)
-        try:
-            calculate_func = get_calculate_func(log.type.name)
-            calculate_func(employee.statistics, "create", log.data)
-            return log
-        except ValueError:
-            await self.session.rollback()
-            raise HTTPException(
-                status_code=400,
-                detail="Error while changing employee stats",
-            )
-
     async def delete_instance(self, obj_id: int, employee: Employee | None = None):
         log = await super().delete_instance(obj_id)
         try:
