@@ -2,6 +2,7 @@ from typing import Annotated, Any
 
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, selectinload
@@ -11,7 +12,6 @@ from app.models.employee import Employee
 from app.models.statistics import Statistics
 from app.schemas.statistics import StatisticsSchema
 from app.service.base import BaseService
-from sqlalchemy import select
 
 
 def get_employee_service(
