@@ -118,7 +118,7 @@ async def create_employee(
     employee_data["workspace_id"] = workspace_id
     employee = await employee_service.create_instance(employee_data)
     stats_data["employee_id"] = employee.id
-    employee_stats = await statistics_service.create_instance(stats_data)
+    _ = await statistics_service.create_instance(stats_data)
     return employee
 
 
