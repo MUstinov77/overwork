@@ -47,11 +47,13 @@ async def get_employee_by_id(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_employee(
-        workspace_id: int,
         data: EmployeeCreateRetrieve,
         employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
         statistics_service: Annotated[StatisticsService, Depends(get_statistics_service)],
+        workspace_id: int | None = None,
 ):
+    if not workspace_id:
+        raise Exception("Workspace id is required")
     employee_data = data.model_dump(
         exclude_none=True
     )
@@ -59,8 +61,8 @@ async def create_employee(
     employee_data["workspace_id"] = workspace_id
     employee = await employee_service.create_instance(employee_data)
     stats_data["employee_id"] = employee.id
-    employee_stats = await statistics_service.create_instance(stats_data)
-    employee.statistics = employee_stats
+    stats = await statistics_service.create_instance(stats_data)
+    employee.statistics = stats
     return employee
 
 
