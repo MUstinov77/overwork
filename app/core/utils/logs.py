@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.log import Log
 from app.models.statistics import Statistics
+from app.service.employee import EmployeeService
 
 
 def get_calculate_func(log_field_type):
@@ -65,20 +66,20 @@ def calculate_days_off(
         case _:
             raise ValueError("Action not found")
 
-def calculate_overwork_time(
+async def calculate_overwork_time(
         employee_stats: Statistics,
+        period,
         log: Log,
         action: str,
-        session: Session | None = None
+        log_service
 ):
     data = log.data or 8
     match action:
         case "create":
-            get_logs_per_month = ...
-            logs_per_month = get_logs_per_month(
+            logs_per_month = await log_service.get_logs_per_period(
+                period,
+                employee_stats.employee_id,
                 log,
-                employee_stats.employee,
-                session
             )
             if (
                 employee_stats.overwork_updated_date is not None

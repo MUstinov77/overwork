@@ -50,15 +50,11 @@ async def create_employee(
         data: EmployeeCreateRetrieve,
         employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
         statistics_service: Annotated[StatisticsService, Depends(get_statistics_service)],
-        workspace_id: int | None = None,
 ):
-    if not workspace_id:
-        raise Exception("Workspace id is required")
     employee_data = data.model_dump(
         exclude_none=True
     )
     stats_data = employee_data.pop("statistics", StatisticsSchema().model_dump())
-    employee_data["workspace_id"] = workspace_id
     employee = await employee_service.create_instance(employee_data)
     stats_data["employee_id"] = employee.id
     stats = await statistics_service.create_instance(stats_data)
@@ -96,20 +92,19 @@ async def update_employee(
     return employee
 
 
-# @router.get(
-#     "/{employee_id}/logs",
-#     response_model=list[LogRetrieve],
-# )
-# async def get_employee_logs(
-#         workspace_id: int,
-#         employee_id: int,
-#         log_service: Annotated[LogService, Depends(get_log_service)]
-# ):
-#     logs = await log_service.retrieve_all(Employee.id, employee_id)
-#     if not logs:
-#         raise NotFoundException
-#     return logs
-#
+@router.get(
+    "/{employee_id}/logs",
+    response_model=list[LogRetrieve],
+)
+async def get_employee_logs(
+        employee_id: int,
+        log_service: Annotated[LogService, Depends(get_log_service)]
+):
+    logs = await log_service.retrieve_all(Employee.id, employee_id)
+    if not logs:
+        raise NotFoundException
+    return logs
+
 
 # @router.post(
 #     "/{employee_id}/logs",

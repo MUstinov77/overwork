@@ -2,10 +2,11 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, and_, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.datastore.db import get_postgres_session
+from app.core.enum import LogType
 from app.core.utils.logs import get_calculate_func
 from app.models.employee import Employee
 from app.models.employee_logs import employees_logs_table
@@ -21,18 +22,27 @@ def get_log_service(
 
 class LogService(BaseService):
 
-    async def delete_instance(self, obj_id: int, employee: Employee | None = None):
-        log = await super().delete_instance(obj_id)
-        try:
-            calculate_func = get_calculate_func(log.type.name)
-            calculate_func(employee.statistics, "delete", log.data)
-            return log
-        except ValueError:
-            await self.session.rollback()
-            raise HTTPException(
-                status_code=400,
-                detail="Error while changing employee stats",
-            )
+    async def get_logs_per_period(
+            self,
+            period,
+            employee: Employee,
+            log: Log
+    ):
+        query = (
+            select(self.model).
+            where(self.model.type == LogType.work_day).
+            join(employees_logs_table).
+            filter(
+                and_(
+                    employees_logs_table.c.employee_id == employee,
+                    extract("year", self.model.date) == log.date.year,
+                    extract("month", self.model.date) == log.date.month
+                )
+            ).order_by(self.model.date)
+        )
+        result = await self.session.execute(query)
+        records = result.scalars().all()
+        return records
 
     async def get_logs_per_month(
             self,

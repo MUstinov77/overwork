@@ -22,13 +22,17 @@ def get_employee_service(
 
 class EmployeeService(BaseService):
 
-    async def retrieve_one(self, field: Any, field_value: Any):
-        query = (
-            select(self.model).
-            options(selectinload(self.model.statistics)).
-            where(field == field_value)
-        )
-
-        result = await self.session.execute(query)
-        record = result.scalars().first()
-        return record
+    # async def retrieve_one(self, field: Any, field_value: Any):
+    #     query = (
+    #         select(self.model).
+    #         options(
+    #             selectinload(self.model.statistics),
+    #             selectinload(self.model.logs)
+    #         ).
+    #         where(field == field_value)
+    #     )
+    #
+    #     result = await self.session.execute(query)
+    #     record = result.scalars().first()
+    #     return record
+    pass

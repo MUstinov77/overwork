@@ -49,6 +49,7 @@ class BaseService:
             await self.session.commit()
             return record
         except SQLAlchemyError as e:
+            print(e)
             await self.session.rollback()
             raise HTTPException(
                 status_code=400,

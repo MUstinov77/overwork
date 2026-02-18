@@ -33,6 +33,7 @@ class Employee(Base):
         secondary=employees_logs_table,
         back_populates="employees",
         cascade="all, delete",
+        lazy="selectin"
     )
 
     statistics = relationship(
@@ -40,4 +41,5 @@ class Employee(Base):
         uselist=False,
         back_populates="employee",
         cascade="all, delete",
+        lazy="selectin"
     )

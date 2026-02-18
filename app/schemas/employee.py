@@ -8,6 +8,7 @@ class EmployeeCreateRetrieve(BaseModel):
     surname: str | None = None
     fathers_name: str | None = None
     position: str | None = None
+    workspace_id: int
     statistics: StatisticsSchema
 
 

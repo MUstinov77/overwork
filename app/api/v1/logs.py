@@ -11,6 +11,7 @@ from app.schemas.log import LogCreateUpdate, LogRetrieve
 from app.core.auth.request_validators import authenticate_user
 from app.service.employee import EmployeeService, get_employee_service
 from app.service.log import LogService, get_log_service
+from app.core.utils.logs import get_calculate_func
 
 router = APIRouter(
     dependencies=(
@@ -20,17 +21,6 @@ router = APIRouter(
     tags=["logs"],
 )
 
-
-@router.get(
-    "/",
-    response_model=list[LogRetrieve],
-    response_model_exclude_none=True,
-)
-async def get_logs(
-        log_service: Annotated[LogService, Depends(get_log_service)],
-):
-    # logs = log_service.retrieve_all()
-    ...
 
 @router.get(
     "/{log_id}",
@@ -64,7 +54,20 @@ async def create_log(
         raise NotFoundException
     for employee_id in employees_id:
         employee = await employee_service.retrieve_one(Employee.id, employee_id)
+        print(employee)
         employee.logs.append(log)
+        print(employee.logs)
+        try:
+            calculate_func = get_calculate_func(log.type.name)
+            await calculate_func(
+                employee.statistics,
+                None,
+                log,
+                "create",
+                log_service
+            )
+        except ValueError:
+            print("Error while changing employee stats")
     return log
 
 

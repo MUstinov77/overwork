@@ -1,7 +1,8 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, UniqueConstraint
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, UniqueConstraint, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import DATE
 
 from app.core.enum import LogType
 from app.models.base import Base
@@ -16,11 +17,11 @@ class Log(Base):
 
     type: Mapped[str] = mapped_column(Enum(LogType))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        TIMESTAMP(timezone=True),
         default=datetime.now(timezone.utc)
     )
 
-    date: Mapped[date] = mapped_column(Date())
+    date: Mapped[date] = mapped_column(DATE())
     data: Mapped[int] = mapped_column(nullable=True)
 
     workspace_id: Mapped[int] = mapped_column(

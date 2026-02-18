@@ -10,6 +10,7 @@ class LogBase(BaseModel):
     type: LogType = LogType.work_day
     date: py_date = py_date.today()
     data: int | None = None
+    workspace_id: int
 
 
 class LogCreateUpdate(LogBase):
@@ -17,5 +18,5 @@ class LogCreateUpdate(LogBase):
 
 
 class LogRetrieve(LogBase):
-
-    employees: list[EmployeeCreateRetrieve]
+    ...
+    #employees: list[EmployeeCreateRetrieve]
