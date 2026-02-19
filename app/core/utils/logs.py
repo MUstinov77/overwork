@@ -68,7 +68,7 @@ def calculate_days_off(
 
 async def calculate_overwork_time(
         employee_stats: Statistics,
-        period,
+        # period,
         log: Log,
         action: str,
         log_service
@@ -76,27 +76,20 @@ async def calculate_overwork_time(
     data = log.data or 8
     match action:
         case "create":
-            logs_per_month = await log_service.get_logs_per_period(
-                period,
+            work_time_per_month = await log_service.get_logs_data_per_period(
+                # period,
                 employee_stats.employee_id,
                 log,
             )
-            if (
-                employee_stats.overwork_updated_date is not None
-                and
-                employee_stats.overwork_updated_date.month == log.date.month
-                and
-                employee_stats.overwork_updated_date.year == log.date.year
-            ):
-                employee_stats.overwork_time += data
+            if work_time_per_month > 164:
+                if (
+                    employee_stats.overwork_updated_date.year == log.date.year and
+                    employee_stats.overwork_updated_date.month == log.date.month
+                ):
+                    employee_stats.overwork_time += data
+                else:
+                    employee_stats.overwork_time += work_time_per_month - 164
                 employee_stats.overwork_updated_date = log.date
-            else:
-                overwork_time = data
-                for month_log in logs_per_month:
-                    overwork_time += month_log.data
-                if overwork_time > 164:
-                    employee_stats.overwork_time += overwork_time - 164
-                    employee_stats.overwork_updated_date = log.date
         case "delete":
             employee_stats.overwork_time -= data
         case _:

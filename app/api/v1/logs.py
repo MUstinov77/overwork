@@ -22,6 +22,16 @@ router = APIRouter(
 )
 
 
+@router.get("/{employee_id}")
+async def get_logs(
+        employee_id: int,
+        log_service: Annotated[LogService, Depends(get_log_service)],
+):
+    log = await log_service.retrieve_one(Log.id, 13)
+    logs = await log_service.get_logs_data_per_period("month", employee_id, log)
+    return logs
+
+
 @router.get(
     "/{log_id}",
     response_model=LogRetrieve,
@@ -54,14 +64,11 @@ async def create_log(
         raise NotFoundException
     for employee_id in employees_id:
         employee = await employee_service.retrieve_one(Employee.id, employee_id)
-        print(employee)
         employee.logs.append(log)
-        print(employee.logs)
         try:
             calculate_func = get_calculate_func(log.type.name)
             await calculate_func(
                 employee.statistics,
-                None,
                 log,
                 "create",
                 log_service
@@ -85,3 +92,5 @@ async def delete_log():
 )
 async def update_log_by_id(updated_data: LogCreateUpdate):
     pass
+
+

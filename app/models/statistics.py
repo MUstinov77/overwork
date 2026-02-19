@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, Integer, event
+from sqlalchemy import Date, ForeignKey, Integer, event, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -35,6 +35,7 @@ class Statistics(Base):
     )
     overwork_updated_date: Mapped[date] = mapped_column(
         Date(),
+        default=func.current_date,
         nullable=True,
     )
 
