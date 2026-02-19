@@ -38,7 +38,8 @@ class LogService(BaseService):
                     extract("year", self.model.date) == log.date.year,
                     extract("month", self.model.date) == log.date.month
                 )
-            ).order_by(self.model.date)
+            ).
+            order_by(self.model.date)
         )
         result = await self.session.execute(query)
         records = result.scalars().all()
