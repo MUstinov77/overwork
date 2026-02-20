@@ -1,8 +1,15 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, UniqueConstraint, TIMESTAMP
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    TIMESTAMP,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    UniqueConstraint
+    )
 from sqlalchemy.dialects.postgresql import DATE
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.enum import LogType
 from app.models.base import Base

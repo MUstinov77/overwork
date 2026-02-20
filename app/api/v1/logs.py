@@ -4,14 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
+from app.core.utils.logs import calculate_employee_stats
 from app.models.employee import Employee
 from app.models.log import Log
 from app.schemas.log import LogCreateUpdate, LogRetrieve
-from app.core.auth.request_validators import authenticate_user
 from app.service.employee import EmployeeService, get_employee_service
 from app.service.log import LogService, get_log_service
-from app.core.utils.logs import calculate_employee_stats
 
 router = APIRouter(
     dependencies=(

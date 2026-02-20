@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status
 
-from app.api.v1 import auth, employees, workspaces, logs
+from app.api.v1 import auth, employees, logs, workspaces
 
 router = APIRouter()
 

@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.exceptions import HTTPException
-from sqlalchemy import select, and_, extract
-from sqlalchemy.sql.functions import sum
+from sqlalchemy import and_, extract, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import sum
 
 from app.core.datastore.db import get_postgres_session
 from app.core.enum import LogType
