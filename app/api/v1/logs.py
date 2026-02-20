@@ -11,7 +11,7 @@ from app.schemas.log import LogCreateUpdate, LogRetrieve
 from app.core.auth.request_validators import authenticate_user
 from app.service.employee import EmployeeService, get_employee_service
 from app.service.log import LogService, get_log_service
-from app.core.utils.logs import get_calculate_func
+from app.core.utils.logs import calculate_employee_stats
 
 router = APIRouter(
     dependencies=(
@@ -66,8 +66,7 @@ async def create_log(
         employee = await employee_service.retrieve_one(Employee.id, employee_id)
         employee.logs.append(log)
         try:
-            calculate_func = get_calculate_func(log.type.name)
-            await calculate_func(
+            await calculate_employee_stats(
                 employee.statistics,
                 log,
                 "create",

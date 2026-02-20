@@ -5,7 +5,7 @@ from app.models.statistics import Statistics
 from app.service.employee import EmployeeService
 
 
-async def get_calculate_func(
+async def calculate_employee_stats(
         employee_stats: Statistics,
         # period,
         log: Log,
