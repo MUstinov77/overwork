@@ -18,7 +18,7 @@ def get_calculate_func(log_field_type):
     return calculate_func
 
 
-def calculate_sick_days(
+async def calculate_sick_days(
         employee_stats: Statistics,
         action: str,
         data: int | None = None
@@ -36,7 +36,7 @@ def calculate_sick_days(
             raise ValueError("Action not found")
 
 
-def calculate_vacation_surplus(
+async def calculate_vacation_surplus(
         employee_stats: Statistics,
         action: str,
 ):
@@ -49,7 +49,7 @@ def calculate_vacation_surplus(
             raise ValueError("Action not found")
 
 
-def calculate_days_off(
+async def calculate_days_off(
         employee_stats: Statistics,
         action: str,
         data: int | None = None
