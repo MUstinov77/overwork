@@ -35,7 +35,7 @@ class Statistics(Base):
     )
     overwork_updated_date: Mapped[date] = mapped_column(
         Date(),
-        default=func.current_date,
+        default=func.current_date(),
         nullable=True,
     )
 
