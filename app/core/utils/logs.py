@@ -20,9 +20,12 @@ def get_calculate_func(log_field_type):
 
 async def calculate_sick_days(
         employee_stats: Statistics,
+        # period,
+        log: Log,
         action: str,
-        data: int | None = None
+        log_service
 ):
+    data = log.data
     match action:
         case "create":
             employee_stats.sick_days += 1
@@ -38,7 +41,10 @@ async def calculate_sick_days(
 
 async def calculate_vacation_surplus(
         employee_stats: Statistics,
+        # period,
+        log: Log,
         action: str,
+        log_service
 ):
     match action:
         case "create":
@@ -51,9 +57,12 @@ async def calculate_vacation_surplus(
 
 async def calculate_days_off(
         employee_stats: Statistics,
+        # period,
+        log: Log,
         action: str,
-        data: int | None = None
+        log_service
 ):
+    data = log.data
     match action:
         case "create":
             employee_stats.days_off += 1
