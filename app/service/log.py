@@ -8,7 +8,6 @@ from sqlalchemy.sql.functions import sum
 
 from app.core.datastore.db import get_postgres_session
 from app.core.enum import LogType
-from app.core.utils.logs import get_calculate_func
 from app.models.employee import Employee
 from app.models.employee_logs import employees_logs_table
 from app.models.log import Log

@@ -21,27 +21,23 @@ async def calculate_employee_stats(
     calculate_func = funcs_by_field.get(log.type.name, None)
     if not calculate_func:
         raise ValueError("Field not found")
-    if log.data:
-        await calculate_overwork_time(
-            employee_stats,
-            # period,
-            log,
-            action,
-            log_service
-        )
-    await calculate_func(
+    await calculate_overwork_time(
         employee_stats,
         # period,
         log,
         action,
         log_service
     )
+    if calculate_func is not calculate_overwork_time:
+        await calculate_func(
+            employee_stats,
+            action,
+        )
     return None
 
 
 async def calculate_sick_days(
         employee_stats: Statistics,
-        # period,
         action: str,
 ) -> None:
     match action:
@@ -56,7 +52,6 @@ async def calculate_sick_days(
 
 async def calculate_vacation_surplus(
         employee_stats: Statistics,
-        # period,
         action: str,
 ) -> None:
     match action:
@@ -71,7 +66,6 @@ async def calculate_vacation_surplus(
 
 async def calculate_days_off(
         employee_stats: Statistics,
-        # period,
         action: str,
 ) -> None:
     match action:
@@ -90,7 +84,7 @@ async def calculate_overwork_time(
         action: str,
         log_service
 ) -> None:
-    data = log.data or 8
+    data = log.data
     match action:
         case "create":
             work_time_per_month = await log_service.get_logs_data_per_period(

@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app.core.auth.request_validators import authenticate_user
 from app.core.exceptions import NotFoundException
-from app.core.utils.logs import get_calculate_func
 from app.models.employee import Employee
 from app.models.log import Log
 from app.schemas.employee import EmployeeCreateRetrieve, EmployeeUpdate
@@ -14,6 +13,7 @@ from app.schemas.statistics import StatisticsSchema
 from app.service.employee import EmployeeService, get_employee_service
 from app.service.log import LogService, get_log_service
 from app.service.statistics import StatisticsService, get_statistics_service
+from app.core.utils.logs import calculate_employee_stats
 
 router = APIRouter(
     dependencies=(
@@ -58,7 +58,6 @@ async def create_employee(
     employee = await employee_service.create_instance(employee_data)
     stats_data["employee_id"] = employee.id
     stats = await statistics_service.create_instance(stats_data)
-    employee.statistics = stats
     return employee
 
 
@@ -130,28 +129,33 @@ async def get_employee_logs(
 #     return log
 
 
-# @router.post(
-#     "/{employee_id}/logs",
-#     response_model=LogRetrieve,
-#     status_code=status.HTTP_201_CREATED
-# )
-# async def create_log_via_employee(
-#         data: LogCreateUpdate,
-#         workspace_id: int,
-#         employee_id: int,
-#         employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
-#         log_service: Annotated[LogService, Depends(get_log_service)]
-# ):
-#     log_create_data = data.model_dump()
-#     log_create_data.pop("employees_id")
-#     log_create_data["workspace_id"] = workspace_id
-#     employee = await employee_service.retrieve_one(
-#         Employee.id,
-#         employee_id
-#     )
-#     log = await log_service.create_instance(log_create_data, employee)
-#     return log
-#
+@router.post(
+    "/{employee_id}/logs",
+    response_model=LogRetrieve,
+    status_code=status.HTTP_201_CREATED
+)
+async def create_log(
+        employee_id: int,
+        data: LogCreateUpdate,
+        employee_service: Annotated[EmployeeService, Depends(get_employee_service)],
+        log_service: Annotated[LogService, Depends(get_log_service)]
+):
+    log_create_data = data.model_dump()
+    log_create_data.pop("employees_id")
+    employee = await employee_service.retrieve_one(
+        Employee.id,
+        employee_id
+    )
+    log = await log_service.create_instance(log_create_data)
+    employee.logs.append(log)
+    await calculate_employee_stats(
+        employee.statistics,
+        log,
+        "create",
+        log_service,
+    )
+    return log
+
 #
 # @router.get(
 #     "/{employee_id}/logs/{log_id}",
